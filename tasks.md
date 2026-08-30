@@ -16,17 +16,17 @@
 - [x] Настроена локальная память `.agents/` (context.md, mem/MEMORY.md)
 - [x] Установлены скиллы: ru-text, supabase-postgres-best-practices, grill-me (`npx skills add`)
 - [x] Проверено: `.agents/`, `.opencode/`, `skills-lock.json` в git-игноре; в коммит идут 3 файла
-- [ ] **Закоммитить** AGENTS.md / tasks.md / .gitignore (шаг пользователя)
-- [ ] **Перезапустить opencode**, чтобы скиллы подхватились (грузится при старте)
+- [x] **Закоммитить** AGENTS.md / tasks.md / .gitignore (шаг пользователя) — коммит 3f04edd
+- [~] **Перезапустить opencode**, чтобы скиллы подхватились (грузится при старте)
 
 ## GitHub-интеграция opencode (шаги пользователя)
 
 > **Полная пошаговая инструкция — `.agents/mem/github-integration.md`** (локально,
 > для возобновления после перезапуска). Итог фиксируется в этом чек-листе.
 
-- [ ] `opencode github install` в корне репозитория (мастер: GitHub App, создание workflow)
-- [ ] Выставить `share: false` в `.github/workflows/opencode.yml`
-- [ ] Добавить API-ключ в GitHub Actions secrets (только пользователь)
+- [x] `opencode github install` в корне репозитория (мастер: GitHub App, создание workflow) — workflow создан 2026-08-30
+- [x] Выставить `share: false` в `.github/workflows/opencode.yml` — сделано
+- [x] Добавить API-ключ в GitHub Actions secrets (только пользователь) — секрет OPENCODE_API_KEY добавлен 2026-08-30
 - [ ] Закоммитить/запушить `opencode.yml`; проверить `/opencode ping` в Issues
 
 ## Разработка (заполнится при появлении задач курса)
