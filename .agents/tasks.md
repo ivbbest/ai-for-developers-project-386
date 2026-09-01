@@ -32,6 +32,8 @@
 - [x] Выставить `share: false` в `.github/workflows/opencode.yml` — сделано
 - [x] Добавить API-ключ в GitHub Actions secrets (только пользователь) — секрет OPENCODE_API_KEY добавлен 2026-08-30
 - [x] Закоммитить/запушить `opencode.yml`; проверить `/opencode ping` в Issues — issue #1, `/oc summarize` ответил бот (run 33316614793)
+- [x] Security-аудит: контроль доступа — фильтр владельца `ivbbest` в `opencode.yml`; минимальные permissions (read) — коммит 28df6ea
+- [x] Расширить до 4 workflow-файлов по сценариям (2026-09-01, см. github-integration.md «Карта файлов»): triage/review/schedule. Изменения в рабочем дереве.
 
 ## Разработка (заполнится при появлении задач курса)
 

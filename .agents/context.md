@@ -68,6 +68,16 @@
   закоммичен в репозиторий (публичная видимость памяти сессии). Проверено: в
   `.agents` нет секретов. Коммит 51be0c8. Осталась незакоммиченная правка
   AGENTS.md (SDD-заметка, из прошлой сессии) — не моя, не трогаю. | 51be0c8
+- 2026-09-01 | Расширена GitHub-интеграция opencode до 4 workflow-файлов (по
+  сценариям, как в доках opencode): `opencode.yml` (интерактив /oc, фильтр
+  владельца ivbbest), `opencode-triage.yml` (автотриаж issues, анти-спам по
+  возрасту аккаунта >= 30 дней), `opencode-review.yml` (авторевью PR),
+  `opencode-schedule.yml` (schedule пн 09:00 UTC + workflow_dispatch, write-права).
+  Ключ/модель оставлены: `OPENCODE_API_KEY` + `opencode/big-pickle`, `share: false`.
+  YAML всех файлов валиден. Изменения в рабочем дереве, не закоммичено. | —
+- 2026-09-01 | Обновлена документация: runbook `.agents/mem/github-integration.md`
+  (раздел «Карта файлов»), AGENTS.md («Дополнительные workflow */opencode*.yml»).
+  Память: context.md, MEMORY.md, learnings.md, tasks.md. | —
 
 ## Карта памяти (.agents)
 

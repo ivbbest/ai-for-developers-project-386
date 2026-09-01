@@ -30,6 +30,8 @@
 
 ## reference
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8
+- 2026-09-01 | reference | 4 workflow-файла opencode: opencode.yml (интерактив /oc, ivbbest), opencode-triage.yml (issues), opencode-review.yml (PR), opencode-schedule.yml (schedule+dispatch). Ключ OPENCODE_API_KEY, модель opencode/big-pickle, share:false. Runbook — github-integration.md | 2026-09-01
+- 2026-09-01 | project | Автосценарии opencode: триаж — анти-спам по возрасту аккаунта>=30дней (github-script), ревью — read-права, schedule — write-права (нет юзер-контекста). Докзы https://opencode.ai/docs/en/github/ | 2026-09-01
 - 2026-08-30 | reference | Runbook шага 8 (github-integration.md) — статус «выполнено»; тест `/oc summarize` в issue #1 прошёл | топик
 - 2026-08-30 | reference | **Learnings (уроки сессий): .agents/mem/learnings.md — append-only, ритуал конца сессии** | топик
 - 2026-08-30 | reference | Паттерн лайт-SDD: docs/specs/<feature>.md (Цель / Критерии приёмки hexlet-check / Ограничения / Заметки / Статус); цикл Issue → спека → план (grill-me) → код → проверка → обновить специю | план 2026-08-30
