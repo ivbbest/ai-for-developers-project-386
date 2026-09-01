@@ -66,7 +66,8 @@
 - [x] Решения пользователя: `.agents` — публичная память без PII; dev-команды —
       контейнер `node:24`; хранение — SQLite + идемпотентный seed (эфемерность Render принята)
 - [x] Опечатки/статусы в docs и памяти синхронизированы (docs/, AGENTS.md, .agents/*)
-- [ ] **Коммит** обновлённых `docs/` и `.agents/` (шаг пользователя; Conventional Commits)
+- [x] **Коммит** обновлённых `docs/`, `AGENTS.md`, `.agents/` — ветка `docs/review-finalization`,
+      цепочка атомарных коммитов (7587641…); push+PR — пользователь (push агенту закрыт)
 
 ### Шаг 1 — Проектирование приложения (Design First / TypeSpec)
 Детали каждой подзадачи — `docs/project-understanding.md` §9 «Шаг 1» и спека
