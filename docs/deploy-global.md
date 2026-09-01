@@ -53,10 +53,11 @@ ufw allow OpenSSH && ufw allow 80 && ufw allow 443 && ufw enable
 ```bash
 # от пользователя deploy
 git clone <репозиторий> ~/cal-com && cd ~/cal-com
-# compose: образ из Dockerfile, PORT=8080, volume для данных:
+# compose: образ из Dockerfile, PORT=3000 (канонический дефолт), volume для данных:
 #   volumes: ["./data:/app/backend/data"]  ← брони переживают рестарты
+#   (внутренний путь БД = backend/data/*.db, в образе — /app/backend/data)
 docker compose up -d --build
-curl -s localhost:8080/api/event-types   # seed-типы → ок
+curl -s localhost:3000/api/event-types   # seed-типы → ок
 ```
 
 ### 4. Домен
@@ -68,7 +69,7 @@ curl -s localhost:8080/api/event-types   # seed-типы → ок
 ```
 # Caddyfile
 cal.example.ru {
-    reverse_proxy localhost:8080
+    reverse_proxy localhost:3000
 }
 ```
 Caddy сам получает и продлевает сертификат Let's Encrypt. Проверка: `https://…`
