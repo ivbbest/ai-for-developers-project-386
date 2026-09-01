@@ -1,5 +1,4 @@
 # Локальная настройка и внутренние файлы (в git не попадают)
-.agents/
 .opencode/
 .env
 skills-lock.json
