@@ -12,6 +12,7 @@
 |---|---|---|
 | `AGENTS.md` | Этот файл — правила и контекст проекта | да |
 | `README.md` | Описание проекта (шаблон Хекслета, не менять без нужды) | да |
+| `docs/` | Planning-доки курса: анализ (`project-understanding.md`), спеки (`specs/`), план (`work-plan.md`), гайды (`deploy-global.md`, `reading-guide.md`), `retrospective.md` | да |
 | `.github/workflows/hexlet-check.yml` | Автотесты Хекслета, **не удалять и не переименовывать** | да |
 | `.agents/tasks.md` | Реестр/чек-лист задач проекта — в git (курируемый) | да |
 | `.agents/` | Память сессии (журнал, индекс фактов) — в git (курируемая) | да |
