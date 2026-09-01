@@ -6,8 +6,9 @@
 ## Что за проект
 Учебный проект Хекслета «ai-for-developers»: сервис бронирования календаря,
 разработка совместно с ИИ. Репозиторий `ivbbest/ai-for-developers-project-386`
-(публичный). Стек и структура **утверждены ревью 2026-09-01**
-(`docs/project-understanding.md` §5/§10/§11; контракт — `docs/specs/api-contract.md`).
+(публичный). Стек и структура **финализированы 2026-09-01** (ревью + аудит,
+`docs/architecture-audit.md`; детали — `docs/project-understanding.md` §5/§10/§11,
+контракт — `docs/specs/api-contract.md`).
 
 ## Окружение
 - Локальная папка = клонированный репозиторий (`/mnt/e/hexlet/cal-com`).
@@ -130,6 +131,18 @@
   целы. В `reading-guide.md` добавлены: маршрут ревью ветки по коммитам, цикл
   исполнения задачи, маршрут изучения проекта для нового человека (9 шагов с
   контролем понимания). | —
+- 2026-09-01 | **Аудит закрыт, правки A1–A5 внесены, стек финализирован** (ветка
+  `docs/audit-fixes` от `docs/audit` dbaad61). Верификация по исходникам: N7 — ложная
+  тревога (`--warn-as-error` есть у `tsp compile`, @typespec/compiler@1.15.0); N1 —
+  уточнён (Prism: `Prefer: code=NNN` даёт заготовленные 404/409 — критерий 1.6 спасён;
+  stateful-сценарий невозможен — стаб 2.1b); N4 — Owner фиксится прозой спеки + `@doc`
+  (unreferenced-модель не попадает в openapi.yaml). Правки: api-contract.md (C7 +
+  `payload_too_large`, E18–E20, сплит E3, раздел Owner, `date` required, N6),
+  work-plan.md (2.1b стаб :4020, критерии 1.6/2.2/2.3/3.5, e2e-время: unit `now()` /
+  e2e `NOW`-env, таблицы тестов), project-understanding.md (§4/§5/§8/§9/§10/§11,
+  решения 15–16), reading-guide.md (C7, E1–E20, 16 решений), tasks.md. Стек финально:
+  Express (не Fastify), shadcn/ui (не Mantine), TanStack Query не берём, мок этапа 2 —
+  стаб контракта. Решения владельца: Q1 — стаб, Q2 — расширенная модель ошибок. | —
 
 ## Карта памяти (.agents)
 
