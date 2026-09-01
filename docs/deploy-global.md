@@ -77,7 +77,7 @@ Caddy сам получает и продлевает сертификат Let's
 
 ### 6. Эксплуатация
 - Обновление: `git pull && docker compose up -d --build`.
-- Бэкап данных: cron `sqlite3 data/app.db ".backup /backup/app-$(date +%F).db"` +
+- Бэкап данных: cron `sqlite3 ~/cal-com/data/app.db ".backup /backup/app-$(date +%F).db"` +
   ротация; копия хотя бы вне машины (object storage/rsync).
 - Логи: `docker compose logs -f app`; рестарт сервиса после перезагрузки VPS —
   `restart: unless-stopped` в compose.

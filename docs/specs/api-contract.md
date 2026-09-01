@@ -122,7 +122,8 @@ slot_out_of_window→400. Все 4xx — только эта модель.
   бэк удовлетворяет требованию «корректно работать с отдельно запущенным бэкендом».
 - Прод: тот же Express раздаёт `frontend/dist` + SPA-fallback на одну порту `PORT`
   (см. project-understanding §11 решение 9).
-- Хранение: SQLite (`better-sqlite3`), файл `backend/data/*.db`; эфемерность диска
+- Хранение: SQLite (`better-sqlite3`), канонический файл `backend/data/app.db`
+  (gitignore-паттерн `backend/data/*.db`); эфемерность диска
   Render принята осознанно — seed при старте (project-understanding §11 решение 10).
 - Порт не хардкодится: `PORT` из env; при `EADDRINUSE` — человекочитаемая ошибка
   «порт X занят, укажи свободный (PORT=…)» и ненулевой exit-code (в dev это частая

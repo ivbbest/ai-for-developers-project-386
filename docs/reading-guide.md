@@ -17,7 +17,7 @@
 | A1 | `README.md`, `.github/workflows/README.md` | Визитка проекта + объяснение автотестов Хекслета (поэтому `hexlet-check.yml` нельзя трогать) |
 | A2 | `git log --oneline` | История по коммитам: становление проекта (hexlet-check → контекст → GitHub-интеграция → память). При желании `git show <SHA> --stat` |
 | A3 | `.github/workflows/` (opencode*.yml) | GitHub-интеграция агента: `/oc` в issues/PR (только владелец, key в secrets, share:false); triage — анти-спам; review — авторевью PR; schedule — расписание |
-| A4 | `.opencode/skills/` + `skills-lock.json` *(локально, в git не входят)* | Инструменты агента: `ru-text` (рус. текст), `supabase-postgres-best-practices` (SQL), `grill-me` (стресс-тест планов), `gh-fix-ci` (разбор падающих CI-проверок) |
+| A4 | `.opencode/skills/` + `skills-lock.json` *(локальные файлы вне публичного репо — внешний читатель их не увидит)* | Инструменты агента: `ru-text` (рус. текст), `supabase-postgres-best-practices` (SQL), `grill-me` (стресс-тест планов), `gh-fix-ci` (разбор падающих CI-проверок) |
 
 ### Блок B — «Исходное задание» (входные материалы `input/`)
 
