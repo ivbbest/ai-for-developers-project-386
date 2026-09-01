@@ -4,6 +4,8 @@
 > `opencode.yml` создан мастером, `share: false`, секрет `OPENCODE_API_KEY`
 > добавлен. Коммит «Add GitHub workflow and project rules» запушен; тест
 > `/oc summarize` в issue #1 — бот ответил (run 33316614793), hexlet-check зелёный.
+>
+> 2026-09-01 — расширено до 4 workflow-файлов (см. «Карта файлов» ниже).
 
 Выполняется **пользователем** (агент не делает: OAuth/браузер, секреты, git push).
 Время ~10–15 минут. Требуется: браузер, аккаунт `ivbbest`, API-ключ модели.
@@ -80,6 +82,25 @@ git push origin main
 ## 8. Проверка
 - GitHub → Actions — без ошибок синтаксиса.
 - Тест: комментарий `/opencode ping` в Issues/PR → дождаться ответа в комментарии.
+
+## Карта файлов (актуально на 2026-09-01)
+
+| Файл | Событие | Назначение | Permissions | prompt |
+|---|---|---|---|---|
+| `opencode.yml` | issue_comment, pull_request_review_comment | интерактив `/oc` `/opencode` (инструкция из комментария), фильтр владельца `ivbbest` | read (id-token write) | не нужен |
+| `opencode-triage.yml` | issues: [opened] | автотриаж новых issues, анти-спам «аккаунт старше 30 дней» | read (id-token write) | обязателен |
+| `opencode-review.yml` | pull_request: [opened, synchronize, reopened, ready_for_review] | автоматический код-ревью PR | read (id-token write) | задан |
+| `opencode-schedule.yml` | schedule (пн 09:00 UTC) + workflow_dispatch | периодические задачи (TODO-сводка) / ручной запуск | **write** (contents/pull-requests/issues) | обязателен |
+
+Все файлы: `OPENCODE_API_KEY` + `model: opencode/big-pickle` + `share: false`.
+
+Особенности:
+- Для `schedule`/`workflow_dispatch` нет юзер-контекста, поэтому нужны явные
+  `write`-права (action создаёт ветки/ишью/PR) — осознанное точечное расширение.
+- Для `issues`/`pull_request` промпт-событий можно давать `read`-права: action
+  пишет комментарии через свой App-токен (OIDC), а не через `GITHUB_TOKEN`.
+- Анти-спам в триаже — `actions/github-script@v7` (возраст аккаунта >= 30 дней),
+  по выбору пользователя вместо строгого фильтра владельца.
 
 ## Риски
 - Публичный репо → обязательно `share: false`.
