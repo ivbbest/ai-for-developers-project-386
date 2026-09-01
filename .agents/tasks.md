@@ -1,11 +1,20 @@
 # Реестр задач проекта «Календарь звонков»
 
-Локальный файл (`.agents/`, в git не попадает). Перенесён из корня репо
-2026-08-30: рабочий чек-лист не публикуется, публичные задачи курса — в Issues.
-Внутренние заметки, журнал и память — `.agents/` (локально).
+Файл в git (`.agents/` — публичная курируемая память, см. AGENTS.md «Что в git»):
+без секретов и PII. Перенесён из корня репо 2026-08-30, с 2026-09-01 (51be0c8)
+отслеживается. Публичные задачи курса — также в GitHub Issues.
 
 ## Правила ведения
 
+- **Git-workflow (решение пользователя 2026-09-01).** Ветка `<тип>/<тема>` от `main`
+  на каждую существенную разработку; коммит-чекпоинт на каждое изменение; PR открывает
+  агент; **сливает только пользователь**. Зависимая работа — на паузе до мержа
+  зависимости; независимые — параллельные ветки. Детали и ветки этапов —
+  `docs/work-plan.md` «Git-workflow».
+- **Тесты обязательны** слоем на этап (`docs/work-plan.md` «Тесты»); задача =
+  поведение + тест + коммит (`docs/retrospective.md` §4).
+- **Публичная гигиена**: в коде/коммитах/PR/README и docs приложения — без
+  ИИ-формулировок и ссылок на `AGENTS.md`/`.agents` (исключение — planning-доки курса).
 - **Статусы:** `[ ]` todo · `[~]` in_progress · `[x]` done (с датой/SHA, где есть).
 - Стабильные ID не перенумеровывать; закрытые строки не перезаписывать.
 - Обновление после заметной задачи; итоги — в `.agents/context.md` (журнал).
@@ -35,7 +44,59 @@
 - [x] Security-аудит: контроль доступа — фильтр владельца `ivbbest` в `opencode.yml`; минимальные permissions (read) — коммит 28df6ea
 - [x] Расширить до 4 workflow-файлов по сценариям (2026-09-01, см. github-integration.md «Карта файлов»): triage/review/schedule. Изменения в рабочем дереве.
 
-## Разработка (заполнится при появлении задач курса)
+## Разработка (задачи курса)
 
-- Стек проекта пока не определён (`Разное`). До появления конкретной задачи —
-  зависимости и сервисы не ставить.
+> Исполняемый план с деталями и критериями готовности — `docs/work-plan.md`
+> (этапы 0–5). Ниже — статус-чек-лист; при расхождении приоритет у work-plan.md.
+
+### Шаг 0 — Предварительный анализ (входные материалы)
+- [x] Изучены `input/*.txt` (user-story, design-first, frontend, backend, docker)
+- [x] Прочитаны все скриншоты `input/*.png` и `input/design/*.png` (OCR: tesseract rus+eng)
+- [x] Проанализированы все ссылки из материалов (TypeSpec, Vite, shadcn, Mantine, Prism,
+      Playwright MCP, CDP MCP, Conventional Commits, release-please, cal.com, Render/Railway)
+- [x] Составлено предварительное понимание: `docs/project-understanding.md`
+- [x] Создан SDD-lite каркас: `docs/specs/TEMPLATE.md`, черновик `docs/specs/api-contract.md`
+- [x] Зафиксированы стек-решение и структура (§5/§10/§11 в project-understanding.md)
+- [x] Создан путеводитель по изучению проекта: `docs/reading-guide.md`
+
+### Шаг 0.5 — Архитектурное ревью плана и контракта
+- [x] Ревью артефактов шага 0 (контракт ↔ UI ↔ план, перекрёстная сверка со скринами)
+- [x] Находки К1–К7 закрыты решениями в `docs/specs/api-contract.md` (C1–C7) и
+      `docs/project-understanding.md` §11 (решения 7–12)
+- [x] Решения пользователя: `.agents` — публичная память без PII; dev-команды —
+      контейнер `node:24`; хранение — SQLite + идемпотентный seed (эфемерность Render принята)
+- [x] Опечатки/статусы в docs и памяти синхронизированы (docs/, AGENTS.md, .agents/*)
+- [ ] **Коммит** обновлённых `docs/` и `.agents/` (шаг пользователя; Conventional Commits)
+
+### Шаг 1 — Проектирование приложения (Design First / TypeSpec)
+Детали каждой подзадачи — `docs/project-understanding.md` §9 «Шаг 1» и спека
+`docs/specs/api-contract.md` (модели/ручки/коды уже зафиксированы — кодеру не решать).
+
+- [ ] GitHub Issue «API-контракт» (текст — из спеки)
+- [ ] Обёртка dev-окружения: скрипт/compose `node:24` (volume на проект) — §11 решение 7
+- [ ] Каркас `contract/`: `package.json` (пин `@typespec/*`), `tspconfig.yaml`
+      (emitter openapi3, `output-file-type: yaml`, вывод `dist/`), `main.tsp` (`@server /api`)
+- [ ] `models.tsp` по спеке: EventType, Slot(+status), Booking, BookingCreate, Error
+- [ ] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409
+- [ ] `npx tsp compile . --warn-as-error` → `contract/dist/openapi.yaml` (коммитим)
+- [ ] Smoke через Prism: `curl` по всем ручкам (включая 409-путь)
+- [ ] (после явного «да» пользователя) CI-проверка синхронизации openapi.yaml (compile → diff)
+- [ ] `docs/specs/api-contract.md` → статус «готово»; ритуал закрытия сессии
+
+### Дальнейшие шаги (по ходу курса)
+- Шаг 2: Фронтенд (`frontend/`, Vite+React+TS+shadcn/ui, страницы по §3/§9/§10;
+  + `/admin/new-type` — форма создания типа; время форматировать в MSK; Vite-proxy `/api`)
+- Шаг 3: Бэкенд (`backend/`, Node+Express+TS+zod+SQLite, по §9/§10; пересечения
+  интервалов в транзакции; `express.static(frontend/dist)` + SPA-fallback на `PORT`)
+- Шаг 4: e2e (`e2e/` Playwright) + CI (`e2e.yml`) + Conventional Commits + release-please
+- Шаг 5: Docker (multi-stage, PORT, единое приложение) + деплой (Render/Railway) + публичная ссылка
+
+### Стек проекта (утверждён ревью 2026-09-01, см. `docs/project-understanding.md` §5/§11)
+- Фронт: TypeScript + Vite + React + shadcn/ui (+ TanStack Query, опц.); Prism mock для разработки.
+- Контракт: TypeSpec → OpenAPI (единый источник правды); префикс `/api`.
+- Бэк: Node + Express + TypeScript + zod; хранение SQLite (better-sqlite3) + seed при старте.
+- e2e: Playwright (`e2e/`); релизы: Conventional Commits + release-please-action v4.
+- Деплой: Docker (PORT, один контейнер: API + статика) → Render / Railway.
+- Структура: монорепо `contract/ + frontend/ + backend/ + e2e/`, корневой NPM workspaces.
+- Окружение: WSL2, `node` на PATH нет, npm — Windows-обёртка; **все dev-команды через
+  контейнер `node:24`** (решение §11 7); Docker 29.x доступен нативно.
