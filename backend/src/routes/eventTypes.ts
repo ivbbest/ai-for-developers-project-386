@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { HttpError } from '../errors.js';
 import type { Db } from '../db/connection.js';
-import { getEventType, listEventTypes } from '../repositories/eventTypes.js';
+import { getEventType, insertEventType, listEventTypes } from '../repositories/eventTypes.js';
 import { buildSlots } from '../services/slots.js';
+import { eventTypeCreateSchema } from '../validation.js';
 import { now, type NowFn } from '../services/now.js';
 
 export function eventTypesRouter(db: Db, nowFn: NowFn = now): Router {
@@ -24,6 +25,27 @@ export function eventTypesRouter(db: Db, nowFn: NowFn = now): Router {
       throw new HttpError(400, 'validation', 'date обязателен: ?date=YYYY-MM-DD (E20)');
     }
     res.json(buildSlots(db, type, date, nowFn));
+  });
+
+  // POST /api/event-types (3.4): id задаёт владелец (C5), занятый id — 409 (E13).
+  // INSERT OR IGNORE + changes==0 — детект дубля без гонки: проверка и вставка
+  // одним оператором.
+  router.post('/', (req, res) => {
+    const body = eventTypeCreateSchema.parse(req.body);
+    const changes = insertEventType(
+      db,
+      {
+        id: body.id,
+        title: body.title,
+        ...(body.description !== undefined ? { description: body.description } : {}),
+        durationMinutes: body.durationMinutes,
+      },
+      { ignore: true },
+    );
+    if (changes === 0) {
+      throw new HttpError(409, 'duplicate_id', `id уже занят: ${body.id}`);
+    }
+    res.status(201).json(getEventType(db, body.id));
   });
 
   return router;

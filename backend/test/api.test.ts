@@ -7,6 +7,7 @@ import { openDb, migrate, type Db } from '../src/db/connection.js';
 import { seed } from '../src/db/seed.js';
 import { createApp } from '../src/app.js';
 import { insertBooking } from '../src/repositories/bookings.js';
+import type { Booking } from '../src/types.js';
 
 // Фиксированное «сейчас»: 2026-09-10 08:00 MSK — день 10-е в окне,
 // рабочие слоты ещё не начались
@@ -208,6 +209,87 @@ describe('POST /api/bookings (3.3)', () => {
   });
 });
 
+describe('POST /api/event-types (3.4)', () => {
+  let db: Db;
+  let api: ReturnType<typeof createApp>;
+  beforeEach(() => {
+    db = makeDb();
+    api = createApp(db, NOW);
+  });
+
+  const type = (over: Record<string, unknown> = {}) => ({
+    id: 'call-45', title: 'Созвон 45 минут', durationMinutes: 45, ...over,
+  });
+
+  it('201: новый тип появляется в каталоге и в сетке по своей длительности', async () => {
+    const created = await request(api).post('/api/event-types').send(type());
+    expect(created.status).toBe(201);
+    expect(created.body).toMatchObject({ id: 'call-45', durationMinutes: 45 });
+    const catalog = await request(api).get('/api/event-types');
+    expect(catalog.body.map((t: { id: string }) => t.id)).toContain('call-45');
+    const slots = await request(api).get(`/api/event-types/call-45/slots?date=${slotDate()}`);
+    // 09:00–18:00 / 45 мин = 12 слотов
+    expect(slots.body).toHaveLength(12);
+  });
+
+  it('E13: повтор seed-id (meet-15) → 409 duplicate_id', async () => {
+    const res = await request(api).post('/api/event-types').send(type({ id: 'meet-15', title: 'Дубль' }));
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe('duplicate_id');
+  });
+
+  it('E12: duration 545/0/13 → 400; 540 → 201 и один слот в день', async () => {
+    for (const bad of [545, 0, 13]) {
+      const res = await request(api).post('/api/event-types').send(type({ id: `x-${bad}`, durationMinutes: bad }));
+      expect(res.status).toBe(400);
+      expect(res.body.code).toBe('validation');
+    }
+    const edge = await request(api).post('/api/event-types').send(type({ id: 'x-540', durationMinutes: 540 }));
+    expect(edge.status).toBe(201);
+    const slots = await request(api).get(`/api/event-types/x-540/slots?date=${slotDate()}`);
+    expect(slots.body).toHaveLength(1);
+  });
+
+  it('C5: id вне паттерна → 400; E8: лишние поля → 400; title >80 → 400', async () => {
+    expect((await request(api).post('/api/event-types').send(type({ id: 'MEET_X' }))).status).toBe(400);
+    expect((await request(api).post('/api/event-types').send(type({ owner: 'tota' }))).status).toBe(400);
+    expect((await request(api).post('/api/event-types').send(type({ title: 'д'.repeat(81) }))).status).toBe(400);
+  });
+});
+
+describe('GET /api/bookings (3.4, E16)', () => {
+  let db: Db;
+  let api: ReturnType<typeof createApp>;
+  beforeEach(() => {
+    db = makeDb();
+    api = createApp(db, NOW);
+  });
+
+  it('только start >= now, сортировка по start', async () => {
+    const rows: Array<[string, string]> = [
+      ['2026-09-12T06:00:00.000Z', 'b3'],
+      ['2026-09-10T04:00:00.000Z', 'b1'], // прошлое (до NOW 05:00Z)
+      ['2026-09-11T06:00:00.000Z', 'b2'],
+    ];
+    for (const [start, id] of rows) {
+      insertBooking(db, {
+        id, eventTypeId: 'meet-15', name: 'Г', email: 'g@example.com',
+        start, end: start.replace('06:00', '06:15').replace('04:00', '04:15'),
+        createdAt: '2026-09-01T00:00:00.000Z',
+      });
+    }
+    const res = await request(api).get('/api/bookings');
+    expect(res.status).toBe(200);
+    expect(res.body.map((b: Booking) => b.id)).toEqual(['b2', 'b3']);
+  });
+
+  it('пустой список — 200 []', async () => {
+    const res = await request(api).get('/api/bookings');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+});
+
 describe('E14: рестарт сервера на существующей БД', () => {
   let dir: string;
   let path: string;
@@ -237,9 +319,9 @@ describe('E14: рестарт сервера на существующей БД'
     seed(second);
     const types = await request(createApp(second, NOW)).get('/api/event-types');
     expect(types.body).toHaveLength(2);
-    // GET /bookings появится в 3.4 — до этого проверяем напрямую по БД
-    const rows = second.prepare('SELECT COUNT(*) AS n FROM bookings').get() as { n: number };
-    expect(rows.n).toBe(1);
+    const bookings = await request(createApp(second, NOW)).get('/api/bookings');
+    expect(bookings.body).toHaveLength(1);
+    expect(bookings.body[0].name).toBe('Г');
     second.close();
   });
 });

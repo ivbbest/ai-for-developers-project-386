@@ -2,13 +2,19 @@ import { Router } from 'express';
 import { HttpError } from '../errors.js';
 import type { Db } from '../db/connection.js';
 import { getEventType } from '../repositories/eventTypes.js';
-import { createBookingIfFree, toIsoUtc } from '../repositories/bookings.js';
+import { createBookingIfFree, listUpcoming, toIsoUtc } from '../repositories/bookings.js';
 import { validateBookingStart } from '../services/slots.js';
 import { now, type NowFn } from '../services/now.js';
 import { bookingCreateSchema } from '../validation.js';
 
 export function bookingsRouter(db: Db, nowFn: NowFn = now): Router {
   const router = Router();
+
+  // GET /api/bookings (3.4, E16): только start >= now, сортировка по start;
+  // пагинации нет — объём окна мал (зафиксированное ограничение дизайна)
+  router.get('/', (_req, res) => {
+    res.json(listUpcoming(db, toIsoUtc(nowFn().toISOString())));
+  });
 
   // POST /api/bookings (3.3). Порядок по спеке: shape/E8 (zod .strict) →
   // тип 404 (E6) → сетка/окно/прошлое (E3/E5/E7) → транзакция+409 (E1/E2/E15).
