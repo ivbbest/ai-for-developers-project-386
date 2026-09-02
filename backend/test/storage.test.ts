@@ -7,6 +7,7 @@ import {
   insertBooking,
   createBookingIfFree,
   listUpcoming,
+  toIsoUtc,
   type BookingCreate,
 } from '../src/repositories/bookings.js';
 import type { Booking } from '../src/types.js';
@@ -90,6 +91,12 @@ describe('хранилище: схема, seed, репозитории', () => {
     expect(findOverlaps(db, '2026-09-10T09:30:00.000Z', '2026-09-10T10:00:00.000Z')).toHaveLength(0);
     // offset-формат на входе запроса тоже сравнивается корректно: 12:15 MSK == 09:15Z — внутри брони
     expect(findOverlaps(db, '2026-09-10T12:15:00+03:00', '2026-09-10T12:30:00+03:00')).toHaveLength(1);
+  });
+
+  it('toIsoUtc бросает на мусоре, а не возвращает Invalid Date', () => {
+    expect(() => toIsoUtc('не-дата')).toThrow(/Некорректная дата/);
+    expect(() => toIsoUtc('2026-13-40T00:00:00Z')).toThrow(/Некорректная дата/);
+    expect(toIsoUtc('2026-09-10T09:00:00Z')).toBe('2026-09-10T09:00:00.000Z');
   });
 
   it('listUpcoming: фильтр start >= now и сортировка по start', () => {

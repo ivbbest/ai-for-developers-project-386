@@ -8,7 +8,13 @@ import { now, type NowFn } from '../services/now.js';
 // «+03:00» рядом с «.000Z» ломает и пересечения (E1), и сортировки.
 // Ненулевые offset/форматы нормализуются здесь, мусор — RangeError.
 export function toIsoUtc(value: string): string {
-  return new Date(value).toISOString();
+  const d = new Date(value);
+  // RangeError от toISOString() доносит до вызывающего только «Invalid time value»;
+  // явная ошибка называет вход, который её вызвал
+  if (Number.isNaN(d.getTime())) {
+    throw new Error(`Некорректная дата: ${value}`);
+  }
+  return d.toISOString();
 }
 
 interface BookingRow {
