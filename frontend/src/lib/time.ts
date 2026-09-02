@@ -32,3 +32,25 @@ export function mskDay(iso: string): string {
     day: '2-digit',
   }).format(new Date(iso));
 }
+
+// «вторник, 31 марта» — подписи выбранной даты в UI (та же маска, что у MSK_FMT_DATE)
+export function formatDayLongMsk(iso: string): string {
+  return MSK_FMT_DATE.format(new Date(iso));
+}
+
+// «2026-03-28-09:00» — формат слота как в референсной админке
+export function formatSlotMsk(iso: string): string {
+  const day = mskDay(iso);
+  return `${day}-${formatTimeMsk(iso)}`;
+}
+
+// «27.03.2026, 14:40» — момент создания
+export function formatCreatedMsk(iso: string): string {
+  const date = new Intl.DateTimeFormat('ru-RU', {
+    timeZone: 'Europe/Moscow',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(iso));
+  return `${date}, ${formatTimeMsk(iso)}`;
+}

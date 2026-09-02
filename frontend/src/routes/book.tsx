@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import type { EventType } from '../api/types';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatDuration } from '../lib/duration';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { OwnerBlock } from '../components/owner-block';
 
 export function BookTypePage() {
   const [types, setTypes] = useState<EventType[] | null>(null);
@@ -13,23 +15,34 @@ export function BookTypePage() {
     api
       .listEventTypes()
       .then(setTypes)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'не удалось загрузить каталог'));
+      .catch(() => setError('Не удалось загрузить каталог'));
   }, []);
-
-  if (error) return <p className="text-destructive">{error}</p>;
-  if (types === null) return <p>Загрузка…</p>;
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Выберите тип события</h1>
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <OwnerBlock />
+          <h1 className="mt-4 text-3xl font-bold">Выберите тип события</h1>
+          <CardDescription className="mt-1">
+            Нажмите на карточку, чтобы открыть календарь и выбрать удобный слот.
+          </CardDescription>
+        </CardContent>
+      </Card>
+      {error && <p className="text-destructive">{error}</p>}
+      {types === null && !error && <Skeleton className="h-32" />}
       <div className="grid gap-4 sm:grid-cols-2">
-        {types.map((t) => (
+        {types?.map((t) => (
           <Link key={t.id} to={`/book/${t.id}`}>
-            <Card className="transition-colors hover:border-primary">
+            <Card className="h-full transition-colors hover:border-primary/60">
               <CardHeader>
-                <CardTitle>{t.title}</CardTitle>
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-lg">{t.title}</CardTitle>
+                  <Badge variant="secondary" className="shrink-0">
+                    {t.durationMinutes} мин
+                  </Badge>
+                </div>
                 {t.description ? <CardDescription>{t.description}</CardDescription> : null}
-                <CardDescription>{formatDuration(t.durationMinutes)}</CardDescription>
               </CardHeader>
             </Card>
           </Link>

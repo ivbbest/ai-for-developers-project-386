@@ -1,4 +1,5 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link, NavLink, Route, Routes } from 'react-router-dom';
+import { CalendarDaysIcon } from 'lucide-react';
 import { AdminNewTypePage } from './routes/admin-new-type';
 import { AdminPage } from './routes/admin';
 import { BookSlotPage } from './routes/book-slot';
@@ -10,16 +11,33 @@ import { SuccessPage } from './routes/success';
 export default function App() {
   return (
     <>
-      <header className="border-b px-6 py-4">
-        <nav className="mx-auto flex max-w-4xl items-center gap-6 text-sm">
-          <Link to="/" className="font-semibold">
-            Календарь звонков
+      <header className="border-b bg-muted/30">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3 text-sm">
+          <Link to="/" className="flex items-center gap-2 font-semibold">
+            <CalendarDaysIcon className="size-5 text-primary" />
+            Calendar
           </Link>
-          <Link to="/book">Записаться</Link>
-          <Link to="/admin">Админка</Link>
+          <div className="flex items-center gap-2">
+            <NavLink
+              to="/book"
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-1.5 hover:bg-muted ${isActive ? 'bg-muted' : ''}`
+              }
+            >
+              Записаться
+            </NavLink>
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `rounded-lg px-3 py-1.5 hover:bg-muted ${isActive ? 'bg-muted' : ''}`
+              }
+            >
+              Админка
+            </NavLink>
+          </div>
         </nav>
       </header>
-      <main className="mx-auto max-w-4xl px-6 py-8">
+      <main className="mx-auto max-w-5xl px-6 py-8">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/book" element={<BookTypePage />} />

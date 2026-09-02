@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { ApiError, type EventType, type Slot } from '../api/types';
 import { Badge } from '@/components/ui/badge';
@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDateTimeMsk, formatTimeMsk, mskDay } from '../lib/time';
-import { formatDuration } from '../lib/duration';
-import { WINDOW_DAYS, WORK_HOURS_LABEL } from '../lib/window';
+import { formatDayLongMsk, formatTimeMsk, mskDay } from '../lib/time';
+import { WINDOW_DAYS } from '../lib/window';
+import { OwnerBlock } from '../components/owner-block';
 
 function toIsoDay(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -24,8 +24,7 @@ export function BookSlotPage() {
   const [selected, setSelected] = useState<Slot | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // «Сегодня» — по поясу сервиса: вечером в MSK календарь не должен
-  // показывать вчерашний день как доступный
+  // «Сегодня» — по поясу сервиса: вечером в MSK вчерашний день уже недоступен
   const today = useMemo(() => new Date(`${mskDay(new Date().toISOString())}T00:00:00`), []);
   const lastDay = useMemo(() => {
     const d = new Date(today);
@@ -64,73 +63,117 @@ export function BookSlotPage() {
   if (type === null) return <Skeleton className="h-40" />;
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_320px]">
-      <div>
-        <h1 className="mb-1 text-2xl font-bold">{type.title}</h1>
-        <p className="mb-4 text-muted-foreground">
-          {formatDuration(type.durationMinutes)} · {WORK_HOURS_LABEL}
-        </p>
-        <div className="rounded-xl border p-2">
-          <Calendar
-            mode="single"
-            month={today}
-            defaultMonth={today}
-            selected={day ?? undefined}
-            onSelect={(d) => d && loadSlots(d)}
-            startMonth={today}
-            endMonth={lastDay}
-            disabled={(d) => d < today || d > lastDay}
-            locale={{ code: 'ru-RU' }}
-          />
-        </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Информация</CardTitle>
-          <CardDescription>
-            {day ? formatDateTimeMsk(day.toISOString()) : 'Дата не выбрана'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <h2 className="mb-2 text-sm font-semibold">Статус слотов</h2>
-          {day === null && <p className="text-sm text-muted-foreground">Выберите дату в календаре</p>}
-          {day !== null && slots === null && <Skeleton className="h-24" />}
-          {day !== null && slots !== null && slots.length === 0 && (
-            <p className="text-sm text-muted-foreground">Нет слотов на этот день</p>
-          )}
-          {day !== null && slots !== null && slots.length > 0 && (
-            <div className="grid max-h-80 grid-cols-2 gap-2 overflow-y-auto">
-              {slots.map((s) => (
-                <Button
-                  key={s.start}
-                  variant={selected?.start === s.start ? 'default' : 'outline'}
-                  disabled={s.status === 'booked'}
-                  onClick={() => setSelected(s)}
-                >
-                  {formatTimeMsk(s.start)}
-                  {s.status === 'booked' ? (
-                    <Badge variant="secondary" className="ml-1">
-                      Занято
-                    </Badge>
-                  ) : null}
-                </Button>
-              ))}
+    <div>
+      <h1 className="mb-6 text-3xl font-bold">{type.title}</h1>
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <Card>
+          <CardContent className="grid gap-4 pt-6">
+            <OwnerBlock />
+            <div>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-lg font-bold">{type.title}</h2>
+                <Badge variant="secondary">{type.durationMinutes} мин</Badge>
+              </div>
+              {type.description ? (
+                <p className="mt-1 text-sm text-muted-foreground">{type.description}</p>
+              ) : null}
             </div>
-          )}
-          {loadError && day !== null && <p className="mt-2 text-sm text-destructive">{loadError}</p>}
-          <Button
-            className="mt-4 w-full"
-            disabled={selected === null}
-            onClick={() =>
-              typeId &&
-              selected &&
-              navigate(`/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}`)
-            }
-          >
-            Продолжить
-          </Button>
-        </CardContent>
-      </Card>
+            <InfoBox label="Выбранная дата" value={day ? formatDayLongMsk(day.toISOString()) : 'Дата не выбрана'} />
+            <InfoBox
+              label="Выбранное время"
+              value={selected ? `${formatTimeMsk(selected.start)} - ${formatTimeMsk(selected.end)}` : 'Время не выбрано'}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Календарь</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Calendar
+              mode="single"
+              defaultMonth={today}
+              selected={day ?? undefined}
+              onSelect={(d) => d && loadSlots(d)}
+              startMonth={today}
+              endMonth={lastDay}
+              disabled={(d) => d < today || d > lastDay}
+              weekStartsOn={1}
+              locale={{ code: 'ru-RU' }}
+              className="w-full"
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Статус слотов</CardTitle>
+            {day === null ? <CardDescription>Выберите дату в календаре</CardDescription> : null}
+          </CardHeader>
+          <CardContent>
+            {day !== null && slots === null && <Skeleton className="h-40" />}
+            {day !== null && slots !== null && slots.length === 0 && (
+              <p className="text-sm text-muted-foreground">Нет слотов на этот день</p>
+            )}
+            {day !== null && slots !== null && slots.length > 0 && (
+              <div className="grid max-h-96 gap-2 overflow-y-auto">
+                {slots.map((s) => (
+                  <button
+                    key={s.start}
+                    type="button"
+                    disabled={s.status === 'booked'}
+                    onClick={() => setSelected(s)}
+                    aria-pressed={selected?.start === s.start}
+                    className={
+                      'flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition-colors ' +
+                      (s.status === 'booked'
+                        ? 'cursor-not-allowed bg-muted/60 text-muted-foreground'
+                        : selected?.start === s.start
+                          ? 'border-primary bg-primary/10'
+                          : 'hover:border-primary/60')
+                    }
+                  >
+                    <span className="tabular-nums">
+                      {formatTimeMsk(s.start)} - {formatTimeMsk(s.end)}
+                    </span>
+                    <span className={s.status === 'booked' ? 'text-muted-foreground' : 'font-medium'}>
+                      {s.status === 'booked' ? 'Занято' : 'Свободно'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {loadError && day !== null && <p className="mt-2 text-sm text-destructive">{loadError}</p>}
+            <div className="mt-4 flex gap-2">
+              <Button variant="outline" asChild className="flex-1">
+                <Link to="/book">Назад</Link>
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={selected === null}
+                onClick={() =>
+                  typeId &&
+                  selected &&
+                  navigate(`/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}`)
+                }
+              >
+                Продолжить
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+
+function InfoBox({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-muted/60 px-3 py-2">
+      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-sm font-medium">{value}</div>
+    </div>
+  );
+}
+

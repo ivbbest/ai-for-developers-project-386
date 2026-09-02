@@ -1,44 +1,44 @@
 import { Link } from 'react-router-dom';
+import { ArrowRightIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const FEATURES = [
-  {
-    title: 'Фиксированные 30-минутные слоты',
-    text: 'Ежедневно с 09:00 до 18:00 (МСК) — выберите удобное время за пару кликов.',
-  },
-  {
-    title: 'Проверка конфликта',
-    text: 'Система не даст занять уже забронированное время — пересечения исключены.',
-  },
-  {
-    title: 'Предстоящие события',
-    text: 'Вся лента будущих встреч — в админке, без переписки и звонков.',
-  },
+  'Выбор типа события и удобного времени для встречи.',
+  'Быстрое бронирование с подтверждением и дополнительными заметками.',
+  'Управление типами встреч и просмотр предстоящих записей в админке.',
 ];
 
 export function HomePage() {
   return (
-    <div>
-      <section className="py-10 text-center">
-        <h1 className="text-3xl font-bold">БЫСТРАЯ ЗАПИСЬ НА ЗВОНОК</h1>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-          Выберите тип встречи, дату и свободный слот — гость получит подтверждение сразу.
+    <div className="grid items-start gap-10 py-10 md:grid-cols-2">
+      <div>
+        <Badge variant="secondary" className="uppercase">
+          Быстрая запись на звонок
+        </Badge>
+        <h1 className="mt-4 text-4xl font-bold">Calendar</h1>
+        <p className="mt-3 max-w-md text-muted-foreground">
+          Забронируйте встречу за минуту: выберите тип события и удобное время.
         </p>
         <Button className="mt-6" size="lg" asChild>
-          <Link to="/book">Записаться</Link>
+          <Link to="/book">
+            Записаться <ArrowRightIcon className="size-4" />
+          </Link>
         </Button>
-      </section>
-      <section className="grid gap-4 py-10 sm:grid-cols-3">
-        {FEATURES.map((f) => (
-          <Card key={f.title}>
-            <CardHeader>
-              <CardTitle className="text-base">{f.title}</CardTitle>
-              <CardDescription>{f.text}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </section>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Возможности</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="grid gap-3 text-sm text-muted-foreground">
+            {FEATURES.map((f) => (
+              <li key={f}>• {f}</li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 }
