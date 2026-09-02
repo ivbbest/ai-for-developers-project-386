@@ -53,6 +53,36 @@ export function assertValidDate(dateStr: string): void {
   }
 }
 
+// Старт брони обязан совпадать со слотом сетки типа (E3/E5/E7):
+// парсится, дата в окне, не в прошлом (сообщение «время слота уже прошло»
+// отличается от оконного — фронт по нему рефрешит сетку), лежит на шаге
+// от 09:00 MSK и заканчивается не позже 18:00.
+export function validateBookingStart(type: EventType, startIso: string, nowFn: NowFn = now): void {
+  const startMs = Date.parse(startIso);
+  if (Number.isNaN(startMs)) {
+    throw new ValidationError(`start не парсится как дата: ${startIso}`);
+  }
+  const t = nowFn();
+  const mskStartMs = startMs + MSK_OFFSET_MINUTES * 60_000;
+  const dayStartMs = Math.floor(mskStartMs / 86_400_000) * 86_400_000;
+  const startDay = new Date(dayStartMs).toISOString().slice(0, 10);
+  const today = mskDay(t);
+  if (startDay < today || startDay > addDays(today, WINDOW_DAYS - 1)) {
+    throw new OutOfWindowError(`дата вне окна записи (${WINDOW_DAYS} дней, MSK): ${startDay}`);
+  }
+  if (startMs < t.getTime()) {
+    throw new OutOfWindowError('время слота уже прошло');
+  }
+  const minuteOfDay = (mskStartMs - dayStartMs) / 60_000;
+  if (
+    minuteOfDay < WORK_START_MINUTE ||
+    minuteOfDay + type.durationMinutes > WORK_END_MINUTE ||
+    (minuteOfDay - WORK_START_MINUTE) % type.durationMinutes !== 0
+  ) {
+    throw new ValidationError('start вне сетки слотов типа');
+  }
+}
+
 // Сетка дня (спека «Доменные сущности», Slot): от 09:00 MSK с шагом
 // durationMinutes, пока end <= 18:00 MSK; прошедшие слоты (start < now)
 // исключены; занятые — со статусом booked (пересечение с ЛЮБОЙ бронью).

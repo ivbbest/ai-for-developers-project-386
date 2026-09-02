@@ -10,6 +10,16 @@ export interface EventType {
 
 export type SlotStatus = 'available' | 'booked';
 
+// Коды ошибок — зеркало контракта (ErrorCode в contract/models.tsp)
+export type ErrorCode =
+  | 'validation'
+  | 'not_found'
+  | 'slot_conflict'
+  | 'slot_out_of_window'
+  | 'payload_too_large'
+  | 'duplicate_id'
+  | 'server_error';
+
 export interface Slot {
   start: string; // ISO UTC
   end: string;   // ISO UTC
