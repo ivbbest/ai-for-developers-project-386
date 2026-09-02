@@ -2,7 +2,7 @@
 
 Статус: решения зафиксированы (по ревью и аудиту 2026-09-01, правки A1–A5 из
 `architecture-audit.md` (архив: `.agents/archive/`, локально) внесены); реализация TypeSpec — этап 1
-Связанный issue: (создать при старте этапа 1, шаг 1.1)
+Связанный issue: https://github.com/ivbbest/ai-for-developers-project-386/issues/6
 Дата: 2026-09-01
 
 ## Цель
