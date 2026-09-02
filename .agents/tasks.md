@@ -79,18 +79,26 @@
       понимание (§4/§5/§8/§9/§10/§11, решения 15–16), путеводитель (C7, E1–E20)
 - [x] **Стек финализирован 2026-09-01** (решения владельца по аудиту: Q1 — стаб,
       Q2 — расширение `Error`): см. секцию «Стек проекта» ниже и §5/§11 понимания
+- [x] **Перепроверка 2026-09-02**: аудиты `docs/architecture-audit.md` §9 (N10–N14),
+      `docs/work-plan-audit.md` (F1–F7) и `docs/status-audit.md` (готовность);
+      cross-ссылки и команды очистки веток в аудитах исправлены при верификации;
+      правки F1.1–F7.1 / A6–A8 внесены в план и этот реестр (ветка `docs/plan-fixes`)
 
 ### Шаг 1 — Проектирование приложения (Design First / TypeSpec)
 Детали каждой подзадачи — `docs/project-understanding.md` §9 «Шаг 1» и спека
 `docs/specs/api-contract.md` (модели/ручки/коды уже зафиксированы — кодеру не решать).
 
 - [ ] GitHub Issue «API-контракт» (текст — из спеки)
-- [ ] Обёртка dev-окружения: скрипт/compose `node:24` (volume на проект) — §11 решение 7
+- [ ] Обёртка dev-окружения: скрипт/compose `node:24` (volume на проект) — §11 решение 7;
+      проверка: `npm i better-sqlite3` в контейнере ставится из prebuild (аудит N8)
+- [ ] Корневой `package.json` монорепо: NPM workspaces `contract`, `frontend`,
+      `backend` (`e2e` — не включать, отдельная установка; §11 решения 3–4, аудит F2)
 - [ ] Каркас `contract/`: `package.json` (пин `@typespec/*`), `tspconfig.yaml`
       (emitter openapi3, `output-file-type: yaml`, вывод `dist/`), `main.tsp` (`@server /api`)
 - [ ] `models.tsp` по спеке: EventType, Slot(+status), Booking, BookingCreate, Error
       (`Owner` — не модель, а `@doc`: в openapi.yaml unreferenced-модели не попадают)
-- [ ] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409, `date` — required `@query`
+- [ ] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409, `date` — required `@query`;
+      для 404/409 — явные `@example` (тело `Error`, детерминированный smoke — аудит N14)
 - [ ] `npx tsp compile . --warn-as-error` → `contract/dist/openapi.yaml` (коммитим)
 - [ ] Smoke через Prism: `curl` по всем ручкам; 404/409 — заголовок `Prefer: code=NNN`
       (Prism без состояния; stateful-сценарий — стаб на этапе 2, 2.1b)
