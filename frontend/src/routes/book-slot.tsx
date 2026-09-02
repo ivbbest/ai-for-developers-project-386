@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDayLongMsk, formatTimeMsk, mskDay } from '../lib/time';
 import { WINDOW_DAYS } from '../lib/window';
 import { OwnerBlock } from '../components/owner-block';
+import { InfoBox } from '../components/info-box';
 
 function toIsoDay(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -184,15 +185,6 @@ export function BookSlotPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-
-function InfoBox({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-muted/60 px-3 py-2">
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="text-sm font-medium">{value}</div>
     </div>
   );
 }

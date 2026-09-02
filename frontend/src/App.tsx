@@ -6,6 +6,7 @@ import { BookSlotPage } from './routes/book-slot';
 import { BookTypePage } from './routes/book';
 import { ConfirmPage } from './routes/confirm';
 import { HomePage } from './routes/home';
+import { NotFoundPage } from './routes/not-found';
 import { SuccessPage } from './routes/success';
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/book/:typeId/success" element={<SuccessPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/admin/new-type" element={<AdminNewTypePage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
     </>

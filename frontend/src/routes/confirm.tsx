@@ -5,18 +5,23 @@ import { ApiError, type Booking, type EventType, type Slot } from '../api/types'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { InfoBox } from '../components/info-box';
 import { formatDayLongMsk, formatTimeMsk, mskDay } from '../lib/time';
+
+// ISO-момент из слотов (дата + время с обязательной зоной); «0» и прочий
+// мусор Date.parse переживает, а Intl на нём падает
+const ISO_START = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/;
 
 export function ConfirmPage() {
   const { typeId } = useParams<{ typeId: string }>();
   const [params] = useSearchParams();
   const rawStart = params.get('start');
-  // ?start= правят руками — Invalid Date улетает в Intl/toISOString белым экраном
-  const start = rawStart && !Number.isNaN(Date.parse(rawStart)) ? rawStart : null;
+  const start = rawStart && ISO_START.test(rawStart) && !Number.isNaN(Date.parse(rawStart)) ? rawStart : null;
   const navigate = useNavigate();
   const dayParam = start ? mskDay(start) : null;
 
   const [type, setType] = useState<EventType | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [daySlots, setDaySlots] = useState<Slot[] | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,10 +32,22 @@ export function ConfirmPage() {
 
   useEffect(() => {
     if (!typeId || !start) return;
-    api.listEventTypes().then((list) => setType(list.find((t) => t.id === typeId) ?? null)).catch(() => {});
+    let cancelled = false;
+    api
+      .listEventTypes()
+      .then((list) => {
+        if (cancelled) return;
+        const found = list.find((t) => t.id === typeId);
+        if (found) setType(found);
+        else setLoadError('Тип события не найден');
+      })
+      .catch(() => !cancelled && setLoadError('Не удалось загрузить данные'));
     // счётчик «Свободно» — как в референсе; сетку дня перезапрашиваем — она же
     // источник актуальности после 409
-    api.getSlots(typeId, mskDay(start)).then(setDaySlots).catch(() => setDaySlots([]));
+    api.getSlots(typeId, mskDay(start)).then((s) => !cancelled && setDaySlots(s)).catch(() => !cancelled && setDaySlots([]));
+    return () => {
+      cancelled = true;
+    };
   }, [typeId, start]);
 
   if (!typeId || !start) {
@@ -44,6 +61,17 @@ export function ConfirmPage() {
     );
   }
 
+  if (loadError) {
+    return (
+      <div>
+        <p className="text-destructive">{loadError}</p>
+        <Button asChild className="mt-4">
+          <Link to={`/book/${typeId}`}>К слотам</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const freeCount = daySlots?.filter((s) => s.status === 'available').length;
   const endIso = type
     ? new Date(new Date(start).getTime() + type.durationMinutes * 60_000).toISOString()
@@ -51,7 +79,7 @@ export function ConfirmPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || submitting) return;
+    if (!name.trim() || submitting || !type) return;
     setSubmitting(true);
     setError(null);
     setConflict(false);
@@ -116,6 +144,7 @@ export function ConfirmPage() {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={254}
                 required
               />
               <Input
@@ -134,22 +163,13 @@ export function ConfirmPage() {
                   )}
                 </p>
               )}
-              <Button type="submit" disabled={submitting || !name.trim()} className="w-full">
+              <Button type="submit" disabled={submitting || !name.trim() || !type} className="w-full">
                 {submitting ? 'Отправка…' : 'Подтвердить запись'}
               </Button>
             </form>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-
-function InfoBox({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-muted/60 px-3 py-2">
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="text-sm font-medium">{value}</div>
     </div>
   );
 }
