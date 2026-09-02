@@ -27,7 +27,9 @@ export function BookSlotPage() {
   const [selected, setSelected] = useState<Slot | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // «Сегодня» — по поясу сервиса: вечером в MSK вчерашний день уже недоступен
+  // Граница «сегодня» считается по поясу сервиса (mskDay), но ХРАНИТСЯ как
+  // локальная полночь: ячейки react-day-picker и toIsoDay() тоже локальные —
+  // сравнения и round-trip самосогласованы в любом поясе браузера
   const today = useMemo(() => new Date(`${mskDay(new Date().toISOString())}T00:00:00`), []);
   const lastDay = useMemo(() => {
     const d = new Date(today);
@@ -37,14 +39,19 @@ export function BookSlotPage() {
 
   useEffect(() => {
     if (!typeId) return;
+    let cancelled = false;
     api
       .listEventTypes()
       .then((list) => {
+        if (cancelled) return;
         const found = list.find((t) => t.id === typeId);
         if (!found) setLoadError('Тип события не найден');
         else setType(found);
       })
-      .catch(() => setLoadError('Не удалось загрузить тип события'));
+      .catch(() => !cancelled && setLoadError('Не удалось загрузить тип события'));
+    return () => {
+      cancelled = true;
+    };
   }, [typeId]);
 
   const loadSlots = (d: Date) => {

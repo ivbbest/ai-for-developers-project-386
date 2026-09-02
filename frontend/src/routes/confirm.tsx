@@ -96,7 +96,9 @@ export function ConfirmPage() {
       if (err instanceof ApiError && err.code === 'slot_conflict') {
         setConflict(true);
         setError(err.message || 'Слот уже занят');
-        // рефреш сетки: слот мог занять другой гость
+        // рефреш сетки: слот мог занять другой гость; если рефреш не поднялся —
+        // показываем ошибку конфликта, счётчик «Свободно» остаётся прежним (свежий
+        // виден после «Обновить слоты»)
         api.getSlots(typeId, mskDay(start)).then(setDaySlots).catch(() => {});
       } else if (err instanceof ApiError) {
         setError(err.message || 'Проверьте данные формы');
@@ -163,7 +165,7 @@ export function ConfirmPage() {
                   )}
                 </p>
               )}
-              <Button type="submit" disabled={submitting || !name.trim() || !type} className="w-full">
+              <Button type="submit" disabled={submitting || !name.trim() || !email.trim() || !type} className="w-full">
                 {submitting ? 'Отправка…' : 'Подтвердить запись'}
               </Button>
             </form>

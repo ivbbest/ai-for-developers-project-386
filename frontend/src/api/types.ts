@@ -62,6 +62,7 @@ export class ApiError extends Error {
 
   constructor(status: number, body: ApiErrorBody | undefined) {
     super(body?.message ?? `HTTP ${status}`);
+    this.name = 'ApiError';
     this.status = status;
     this.code = body?.code ?? 'unknown';
   }
