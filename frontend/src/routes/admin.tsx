@@ -43,7 +43,7 @@ export function AdminPage() {
               <div className="text-sm text-muted-foreground">{b.email}</div>
               <div className="text-sm text-muted-foreground">Слот: {formatSlotMsk(b.start)}</div>
               <div className="text-sm text-muted-foreground">Создано: {formatCreatedMsk(b.createdAt)}</div>
-              {b.notes ? <div className="text-sm text-muted-foreground">Заметки: {b.notes}</div> : null}
+              {b.notes ? <div className="text-sm break-words text-muted-foreground">Заметки: {b.notes}</div> : null}
             </CardContent>
           </Card>
         ))}

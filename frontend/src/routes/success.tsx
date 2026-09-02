@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { formatDateTimeMsk } from '../lib/time';
 
 export function SuccessPage() {
-  const { state } = useLocation() as { state?: { booking?: Booking } };
+  const { state } = useLocation() as { state: { booking?: Booking } | null };
   const booking = state?.booking;
 
   return (

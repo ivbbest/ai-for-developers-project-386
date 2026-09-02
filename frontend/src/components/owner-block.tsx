@@ -5,7 +5,7 @@ export function OwnerBlock() {
   return (
     <div className="flex items-center gap-3">
       <div
-        aria-hidden
+        aria-hidden="true"
         className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-muted"
       >
         <svg viewBox="0 0 40 40" className="size-11">

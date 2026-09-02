@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { ApiError, type EventType, type Slot } from '../api/types';
@@ -54,7 +54,7 @@ export function BookSlotPage() {
     };
   }, [typeId]);
 
-  const loadSlots = (d: Date) => {
+  const loadSlots = useCallback((d: Date) => {
     if (!typeId) return;
     setDay(d);
     setSelected(null);
@@ -72,7 +72,7 @@ export function BookSlotPage() {
         setSlots([]);
         setLoadError(e instanceof ApiError ? e.message : 'Не удалось загрузить слоты');
       });
-  };
+  }, [typeId]);
 
   // возврат из /confirm («Изменить», «Обновить слоты») — на тот же день
   useEffect(() => {
@@ -80,8 +80,7 @@ export function BookSlotPage() {
     if (type && date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       loadSlots(new Date(`${date}T00:00:00`));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type]);
+  }, [type, loadSlots]);
 
   if (loadError && type === null) return <p className="text-destructive">{loadError}</p>;
   if (type === null) return <Skeleton className="h-40" />;
@@ -182,7 +181,9 @@ export function BookSlotPage() {
                 onClick={() =>
                   typeId &&
                   selected &&
-                  navigate(`/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}`)
+                  navigate(
+                  `/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}&end=${encodeURIComponent(selected.end)}`,
+                )
 
                 }
               >

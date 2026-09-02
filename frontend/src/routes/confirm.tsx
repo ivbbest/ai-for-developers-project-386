@@ -16,7 +16,11 @@ export function ConfirmPage() {
   const { typeId } = useParams<{ typeId: string }>();
   const [params] = useSearchParams();
   const rawStart = params.get('start');
+  const rawEnd = params.get('end');
   const start = rawStart && ISO_START.test(rawStart) && !Number.isNaN(Date.parse(rawStart)) ? rawStart : null;
+  // end берём из слота (он знает свой end); вычисление по длительности — только
+  // фолбэк для ссылки без ?end=, чтобы не разъезжалось с серверным округлением
+  const endParam = rawEnd && ISO_START.test(rawEnd) ? rawEnd : null;
   const navigate = useNavigate();
   const dayParam = start ? mskDay(start) : null;
 
@@ -73,9 +77,9 @@ export function ConfirmPage() {
   }
 
   const freeCount = daySlots?.filter((s) => s.status === 'available').length;
-  const endIso = type
+  const endIso = endParam ?? (type
     ? new Date(new Date(start).getTime() + type.durationMinutes * 60_000).toISOString()
-    : null;
+    : null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
