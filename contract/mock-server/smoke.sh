@@ -78,12 +78,25 @@ check "slots без date → 400" 400 "$BASE/event-types/meet-15/slots"
 check "slots кривая date → 400" 400 "$BASE/event-types/meet-15/slots?date=2026-02-30"
 check "slots вне окна → 400" 400 "$BASE/event-types/meet-15/slots?date=2020-01-01"
 check_body "slot_out_of_window" '"slot_out_of_window"'
+DAY14=$(TZ=Europe/Moscow date -d "+14 days" +%F)
+check "slots +14 день вне окна → 400 (E5)" 400 "$BASE/event-types/meet-15/slots?date=$DAY14"
+check_body "+14 — slot_out_of_window" '"slot_out_of_window"'
+check "slots id вне паттерна → 400 (C5)" 400 "$BASE/event-types/MEET_1/slots?date=$TOMORROW"
 check "slots нет типа → 404" 404 "$BASE/event-types/nope/slots?date=$TOMORROW"
 check_body "not_found" '"not_found"'
 check "booking нет типа → 404" 404 -H 'Content-Type: application/json' -d '{"eventTypeId":"nope","start":"2026-01-01T06:00:00.000Z","name":"Г","email":"g@example.com"}' "$BASE/bookings"
 check "booking кривой email → 400" 400 -H 'Content-Type: application/json' -d '{"eventTypeId":"meet-15","start":"2026-01-01T06:00:00.000Z","name":"Г","email":"не-почта"}' "$BASE/bookings"
+check "booking кривой JSON → 400 Error (E9)" 400 -H 'Content-Type: application/json' -d '{"eventTypeId":' "$BASE/bookings"
+check_body "кривой JSON — validation" '"validation"'
+check "booking неизвестное поле → 400 (E8)" 400 -H 'Content-Type: application/json' -d "{\"eventTypeId\":\"meet-15\",\"start\":\"$FIRST_START\",\"name\":\"Г\",\"email\":\"g@example.com\",\"end\":\"2026-01-01T07:00:00.000Z\"}" "$BASE/bookings"
+check "booking start вне сетки (07:07) → 400 (E7)" 400 -H 'Content-Type: application/json' -d "{\"eventTypeId\":\"meet-15\",\"start\":\"${TOMORROW}T04:07:00.000Z\",\"name\":\"Г\",\"email\":\"g@example.com\"}" "$BASE/bookings"
+check "booking start в прошлом → 400 (E3)" 400 -H 'Content-Type: application/json' -d '{"eventTypeId":"meet-15","start":"2020-01-02T06:00:00.000Z","name":"Г","email":"g@example.com"}' "$BASE/bookings"
+node -e 'const fs=require("fs");fs.writeFileSync("/tmp/big.json",JSON.stringify({eventTypeId:"meet-15",start:"2026-01-01T06:00:00.000Z",name:"Г",email:"g@example.com",notes:"x".repeat(70000)}))'
+check "booking тело >64KB → 413 (E18)" 413 -H 'Content-Type: application/json' --data-binary @/tmp/big.json "$BASE/bookings"
+check_body "413 payload_too_large" '"payload_too_large"'
 check "тип duration=7 → 400" 400 -H 'Content-Type: application/json' -d '{"id":"x-7","title":"x","durationMinutes":7}' "$BASE/event-types"
 check "тип id вне паттерна → 400" 400 -H 'Content-Type: application/json' -d '{"id":"X_7","title":"x","durationMinutes":15}' "$BASE/event-types"
+check "тип неизвестное поле → 400 (E8)" 400 -H 'Content-Type: application/json' -d '{"id":"x-ok","title":"x","durationMinutes":15,"extra":true}' "$BASE/event-types"
 check "неизвестный /api/* → 404 Error" 404 "$BASE/nope"
 check_body "not_found формат" '"not_found"'
 

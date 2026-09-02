@@ -9,6 +9,7 @@ const MSK_OFFSET_MIN = 180; // Europe/Moscow фиксировано +03:00 (сп
 const WORK_START = 9 * 60;
 const WORK_END = 18 * 60;
 const WINDOW_DAYS = 14;
+const ID_PATTERN = /^[a-z0-9-]{1,40}$/;
 
 const error = (res, status, code, message) => res.status(status).json({ code, message });
 
@@ -33,16 +34,39 @@ function addDays(isoDay, days) {
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
+// Тело запроса — только известные поля контракта (E8: неизвестные → 400),
+// строки нормализуются trim (E10/E11)
+function readBody(req, res, allowed) {
+  const b = req.body;
+  if (b === null || typeof b !== 'object' || Array.isArray(b)) {
+    error(res, 400, 'validation', 'Ожидался JSON-объект');
+    return null;
+  }
+  const extra = Object.keys(b).filter((k) => !allowed.includes(k));
+  if (extra.length > 0) {
+    error(res, 400, 'validation', `Неизвестные поля: ${extra.join(', ')}`);
+    return null;
+  }
+  const out = {};
+  for (const [k, v] of Object.entries(b)) out[k] = typeof v === 'string' ? v.trim() : v;
+  return out;
+}
+
 const app = express();
 app.use(express.json({ limit: '64kb' }));
+// Ошибки body-parser — тоже Error JSON (C7), не html-заглушка Express
 app.use((err, _req, res, next) => {
   if (err?.type === 'entity.too.large') return error(res, 413, 'payload_too_large', 'Тело запроса слишком большое');
+  if (err?.type === 'entity.parse.failed') return error(res, 400, 'validation', 'Ожидался валидный JSON');
   return next(err);
 });
 
 app.get('/api/event-types', (_req, res) => res.json(state.eventTypes));
 
 app.get('/api/event-types/:id/slots', (req, res) => {
+  if (!ID_PATTERN.test(req.params.id)) {
+    return error(res, 400, 'validation', `id не соответствует паттерну: ${req.params.id}`);
+  }
   const type = state.eventTypes.find((t) => t.id === req.params.id);
   if (!type) return error(res, 404, 'not_found', `Тип события не найден: ${req.params.id}`);
   const date = req.query.date;
@@ -69,20 +93,41 @@ app.get('/api/event-types/:id/slots', (req, res) => {
 });
 
 app.post('/api/bookings', (req, res) => {
-  const b = req.body ?? {};
+  const b = readBody(req, res, ['eventTypeId', 'start', 'name', 'email', 'notes']);
+  if (b === null) return undefined;
   const type = state.eventTypes.find((t) => t.id === b.eventTypeId);
   if (!type) return error(res, 404, 'not_found', `Тип события не найден: ${b.eventTypeId}`);
-  let start;
+  const startMs = typeof b.start === 'string' ? Date.parse(b.start) : Number.NaN;
   if (
-    typeof b.start !== 'string' || Number.isNaN((start = new Date(b.start)).getTime()) ||
-    typeof b.name !== 'string' || b.name.trim() === '' || b.name.length > 120 ||
+    Number.isNaN(startMs) ||
+    typeof b.name !== 'string' || b.name === '' || b.name.length > 120 ||
     typeof b.email !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.email) ||
     (b.notes !== undefined && (typeof b.notes !== 'string' || b.notes.length > 2000))
   ) {
     return error(res, 400, 'validation', 'name/email/start/notes не проходят валидацию контракта');
   }
-  const startIso = start.toISOString();
-  const endIso = new Date(start.getTime() + type.durationMinutes * 60_000).toISOString();
+  // start обязан совпадать со слотом сетки типа (E3/E7): рабочий день,
+  // выравнивание по 09:00 MSK с шагом duration, окно C4, не в прошлом
+  const mskMs = startMs + MSK_OFFSET_MIN * 60_000;
+  const dayStartMs = Math.floor(mskMs / 86_400_000) * 86_400_000;
+  const minuteOfDay = (mskMs - dayStartMs) / 60_000;
+  const startDay = new Date(dayStartMs).toISOString().slice(0, 10);
+  const today = mskDay(new Date());
+  if (startDay < today || startDay > addDays(today, WINDOW_DAYS - 1)) {
+    return error(res, 400, 'slot_out_of_window', `дата вне окна записи (${WINDOW_DAYS} дней, MSK): ${startDay}`);
+  }
+  if (
+    minuteOfDay < WORK_START ||
+    minuteOfDay + type.durationMinutes > WORK_END ||
+    (minuteOfDay - WORK_START) % type.durationMinutes !== 0
+  ) {
+    return error(res, 400, 'validation', 'start вне сетки слотов типа');
+  }
+  if (startMs < Date.now()) {
+    return error(res, 400, 'validation', 'start в прошлом');
+  }
+  const startIso = new Date(startMs).toISOString();
+  const endIso = new Date(startMs + type.durationMinutes * 60_000).toISOString();
   if (overlaps(startIso, endIso).length > 0) {
     return error(res, 409, 'slot_conflict', 'Слот уже занят (пересечение интервалов)');
   }
@@ -91,7 +136,7 @@ app.post('/api/bookings', (req, res) => {
     eventTypeId: type.id,
     start: startIso,
     end: endIso,
-    name: b.name.trim(),
+    name: b.name,
     email: b.email,
     ...(b.notes ? { notes: b.notes } : {}),
     createdAt: new Date().toISOString(),
@@ -106,13 +151,15 @@ app.get('/api/bookings', (_req, res) => {
 });
 
 app.post('/api/event-types', (req, res) => {
-  const t = req.body ?? {};
+  const t = readBody(req, res, ['id', 'title', 'description', 'durationMinutes']);
+  if (t === null) return undefined;
   if (
-    typeof t.id !== 'string' || !/^[a-z0-9-]{1,40}$/.test(t.id) ||
+    typeof t.id !== 'string' || !ID_PATTERN.test(t.id) ||
     typeof t.title !== 'string' || t.title.length < 1 || t.title.length > 80 ||
+    (t.description !== undefined && (typeof t.description !== 'string' || t.description.length > 500)) ||
     !Number.isInteger(t.durationMinutes) || t.durationMinutes < 5 || t.durationMinutes > 540 || t.durationMinutes % 5 !== 0
   ) {
-    return error(res, 400, 'validation', 'id/title/durationMinutes не проходят валидацию контракта');
+    return error(res, 400, 'validation', 'id/title/description/durationMinutes не проходят валидацию контракта');
   }
   if (state.eventTypes.some((x) => x.id === t.id)) {
     return error(res, 409, 'duplicate_id', `id уже занят: ${t.id}`);
@@ -120,7 +167,7 @@ app.post('/api/event-types', (req, res) => {
   const type = {
     id: t.id,
     title: t.title,
-    ...(typeof t.description === 'string' && t.description ? { description: t.description } : {}),
+    ...(t.description ? { description: t.description } : {}),
     durationMinutes: t.durationMinutes,
   };
   state.eventTypes.push(type);
