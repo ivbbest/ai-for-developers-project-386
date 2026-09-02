@@ -170,6 +170,12 @@
   и m3 (exec-бит dev.sh через update-index); m2 уже был исправлен в head; M2/M3/m1/m4–m6 разобраны
   без изменений (причины в комментарии к PR) | ветка feat/api-contract c95b5cd..d945881
 - 2026-09-02 | PR #7: contract-sync упал в контейнере («Not a git repository» — git run-шагов не видит репозиторий checkout'а); проверка переписана на cp+diff без git, зелёный/красный подтверждены локально; по ревью-боту: trap в smoke консолидирован, json-schema запинен exact | ветка feat/api-contract ca3b8bd..eadf42f
+- 2026-09-02 | Этап 2 (фронт) готов в ветке feat/frontend: каркас Vite+React+TS+shadcn (7 роутов),
+  стаб contract/mock-server (in-memory, 5 ручек, смоук 41 проверка), типизированный клиент +
+  Vite-proxy на env-таргете, экраны сверены с референсами §3, README «Запуск»; ревью-субагент:
+  7 major разобраны (JSON-400 Error, валидация сетки на стабе, guard ?start=, MSK-подпись даты,
+  гонка запросов слотов, возврат на тот же день, host-сеть обёртки) + strict/пины/чистка ассетов;
+  build/lint/typecheck зелёные, смоук контракта не задет | ветка feat/frontend 4151ac5..46c905c
 - 2026-09-02 | Этап 1 закрыт полностью (шаг 1.7 по согласию владельца): workflow
   `contract-sync.yml` (npm ci → compile → diff артефакта, контейнер node:24); критерий
   «красный на рассинхроне» проверен локальной симуляцией (зелёный/красный) | ветка feat/api-contract a25051f

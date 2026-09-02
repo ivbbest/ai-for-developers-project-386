@@ -120,6 +120,17 @@
   + CI (`e2e.yml`) + Conventional Commits + release-please
 - Шаг 5: Docker (multi-stage, PORT, единое приложение) + деплой (Render/Railway) + публичная ссылка
 
+### Шаг 2 — Фронтенд — ветка `feat/frontend` — готова, ждёт пуш/PR
+
+- [x] 2.1 каркас Vite+React+TS+shadcn (dev-сервер отдаёт роуты) — 4151ac5
+- [x] 2.1b стаб контракта `contract/mock-server` (in-memory, 5 ручек, 409 по пересечению,
+      MOCK_PORT=4020) — 653ef88; валидации по ревью и смоук из 41 проверки — 6c61684
+- [x] 2.2 API-клиент по контракту + Vite-proxy `/api` (таргет — env `VITE_API_TARGET`) — 76f001e
+- [x] 2.3 экраны: /, /book, /book/:typeId, confirm (409+рефреш), success, /admin, /admin/new-type
+      — 204dd12; сверка с референсами §3 — 5a925b3; фиксы ревью — 7e20c7a; клик-проход — e2e этапа 4
+- [x] 2.4 build зелёный, сверка с §3, README «Запуск» — f8f8624; host-сеть обёртки — da8b7ec;
+      strict + гигиена зависимостей — adde6a6, 02c2608
+
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта
   (Prism — smoke по схеме и proxy-валидация).
