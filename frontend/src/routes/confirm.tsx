@@ -10,8 +10,11 @@ import { formatDayLongMsk, formatTimeMsk, mskDay } from '../lib/time';
 export function ConfirmPage() {
   const { typeId } = useParams<{ typeId: string }>();
   const [params] = useSearchParams();
-  const start = params.get('start');
+  const rawStart = params.get('start');
+  // ?start= правят руками — Invalid Date улетает в Intl/toISOString белым экраном
+  const start = rawStart && !Number.isNaN(Date.parse(rawStart)) ? rawStart : null;
   const navigate = useNavigate();
+  const dayParam = start ? mskDay(start) : null;
 
   const [type, setType] = useState<EventType | null>(null);
   const [daySlots, setDaySlots] = useState<Slot[] | null>(null);
@@ -96,7 +99,7 @@ export function ConfirmPage() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Подтверждение записи</CardTitle>
             <Button asChild variant="outline" size="sm">
-              <Link to={`/book/${typeId}`}>Изменить</Link>
+              <Link to={`/book/${typeId}?date=${dayParam}`}>Изменить</Link>
             </Button>
           </CardHeader>
           <CardContent>
@@ -125,7 +128,7 @@ export function ConfirmPage() {
                 <p className="text-sm text-destructive">
                   {error}
                   {conflict && (
-                    <Link className="ml-2 underline" to={`/book/${typeId}`}>
+                    <Link className="ml-2 underline" to={`/book/${typeId}?date=${dayParam}`}>
                       Обновить слоты
                     </Link>
                   )}

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { ApiError, type EventType, type Slot } from '../api/types';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,9 @@ function toIsoDay(d: Date): string {
 
 export function BookSlotPage() {
   const { typeId } = useParams<{ typeId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const reqSeq = useRef(0);
   const [type, setType] = useState<EventType | null>(null);
   const [day, setDay] = useState<Date | null>(null);
   const [slots, setSlots] = useState<Slot[] | null>(null);
@@ -50,14 +52,28 @@ export function BookSlotPage() {
     setSelected(null);
     setSlots(null);
     setLoadError(null);
+    // ответ за прежний день не должен перезаписать новый при быстрой смене даты
+    const seq = ++reqSeq.current;
     api
       .getSlots(typeId, toIsoDay(d))
-      .then(setSlots)
+      .then((list) => {
+        if (seq === reqSeq.current) setSlots(list);
+      })
       .catch((e: unknown) => {
+        if (seq !== reqSeq.current) return;
         setSlots([]);
         setLoadError(e instanceof ApiError ? e.message : 'Не удалось загрузить слоты');
       });
   };
+
+  // возврат из /confirm («Изменить», «Обновить слоты») — на тот же день
+  useEffect(() => {
+    const date = searchParams.get('date');
+    if (type && date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      loadSlots(new Date(`${date}T00:00:00`));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type]);
 
   if (loadError && type === null) return <p className="text-destructive">{loadError}</p>;
   if (type === null) return <Skeleton className="h-40" />;
@@ -78,7 +94,10 @@ export function BookSlotPage() {
                 <p className="mt-1 text-sm text-muted-foreground">{type.description}</p>
               ) : null}
             </div>
-            <InfoBox label="Выбранная дата" value={day ? formatDayLongMsk(day.toISOString()) : 'Дата не выбрана'} />
+            <InfoBox
+              label="Выбранная дата"
+              value={day ? formatDayLongMsk(`${toIsoDay(day)}T12:00:00Z`) : 'Дата не выбрана'}
+            />
             <InfoBox
               label="Выбранное время"
               value={selected ? `${formatTimeMsk(selected.start)} - ${formatTimeMsk(selected.end)}` : 'Время не выбрано'}
@@ -156,6 +175,7 @@ export function BookSlotPage() {
                   typeId &&
                   selected &&
                   navigate(`/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}`)
+
                 }
               >
                 Продолжить
