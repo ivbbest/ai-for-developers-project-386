@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { ApiError, type Booking, type EventType, type Slot } from '../api/types';
@@ -31,6 +31,11 @@ export function ConfirmPage() {
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // рефетч из catch не в эффекте — флаг живости компонента через ref
+  const aliveRef = useRef(true);
+  useEffect(() => () => {
+    aliveRef.current = false;
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
 
@@ -103,7 +108,10 @@ export function ConfirmPage() {
         // рефреш сетки: слот мог занять другой гость; если рефреш не поднялся —
         // показываем ошибку конфликта, счётчик «Свободно» остаётся прежним (свежий
         // виден после «Обновить слоты»)
-        api.getSlots(typeId, mskDay(start)).then(setDaySlots).catch(() => {});
+        api
+          .getSlots(typeId, mskDay(start))
+          .then((list) => aliveRef.current && setDaySlots(list))
+          .catch(() => {});
       } else if (err instanceof ApiError) {
         setError(err.message || 'Проверьте данные формы');
       } else {
