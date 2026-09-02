@@ -35,14 +35,14 @@ function shutdown(signal: string): void {
   if (shuttingDown) return;
   shuttingDown = true;
   console.log(`received ${signal}, shutting down`);
-  let forceExit: NodeJS.Timeout;
+  // зависший keep-alive не должен держать процесс: жёсткий выход через 5 с;
+  // снимается, когда server.close() дождался текущих запросов
+  const forceExit = setTimeout(() => process.exit(1), 5_000).unref();
   server.close(() => {
     clearTimeout(forceExit);
     db.close();
     process.exit(0);
   });
-  // зависший keep-alive не должен держать процесс: жёсткий выход через 5 с
-  forceExit = setTimeout(() => process.exit(1), 5_000).unref();
 }
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));

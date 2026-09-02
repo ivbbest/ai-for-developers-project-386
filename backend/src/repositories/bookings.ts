@@ -6,13 +6,16 @@ import { now, type NowFn } from '../services/now.js';
 // Хранилище принимает только канон UTC ISO (вид ...T09:00:00.000Z):
 // TEXT-колонки сравниваются лексикографически, «2026-09-10T09:30:00Z» или
 // «+03:00» рядом с «.000Z» ломает и пересечения (E1), и сортировки.
-// Ненулевые offset/форматы нормализуются здесь, мусор — RangeError.
+// Ненулевые offset/форматы нормализуются здесь, мусор — InvalidDateError
+// (типизирован: маршрут 3.3 отмаппит в 400 validation, не в 500).
+export class InvalidDateError extends Error {}
+
 export function toIsoUtc(value: string): string {
   const d = new Date(value);
   // RangeError от toISOString() доносит до вызывающего только «Invalid time value»;
   // явная ошибка называет вход, который её вызвал
   if (Number.isNaN(d.getTime())) {
-    throw new Error(`Некорректная дата: ${value}`);
+    throw new InvalidDateError(`Некорректная дата: ${value}`);
   }
   return d.toISOString();
 }

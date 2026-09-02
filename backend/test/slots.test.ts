@@ -69,6 +69,21 @@ describe('сетка слотов (3.2)', () => {
     expect(s30[0]!.status).toBe('booked');
   });
 
+  it('бронь через границу рабочего дня: straddle 09:00 и стык 18:00', () => {
+    // 08:30–09:30 MSK = 05:30–06:30Z — накладывается на слот 09:00–09:15
+    insertBooking(db, bk('2026-09-10T05:30:00.000Z', '2026-09-10T06:30:00.000Z'));
+    const s = buildSlots(db, MEET15, '2026-09-10', NOW_MORNING);
+    expect(s[0]?.status).toBe('booked'); // 09:00–09:15
+    expect(s[3]?.status).toBe('available'); // 09:45 — после 09:30
+    // бронь 17:45–18:30 MSK (14:45–15:30Z) стредит конец дня: последний слот 17:45 занят
+    const s2 = buildSlots(db, MEET15, '2026-09-10', () => new Date('2026-09-09T05:00:00Z'));
+    insertBooking(db, bk('2026-09-10T14:45:00.000Z', '2026-09-10T15:30:00.000Z'));
+    const s3 = buildSlots(db, MEET15, '2026-09-10', () => new Date('2026-09-09T05:00:00Z'));
+    expect(s3.at(-1)?.status).toBe('booked');
+    expect(s3.at(-2)?.status).toBe('available');
+    expect(s2).toHaveLength(36);
+  });
+
   it('окно: сегодня и сегодня+13 — валидны; вчера и +14 — вне', () => {
     expect(isDateInWindow('2026-09-10', NOW_MORNING)).toBe(true);
     expect(isDateInWindow('2026-09-23', NOW_MORNING)).toBe(true);
@@ -99,6 +114,8 @@ describe('сетка слотов (3.2)', () => {
 
   it('кривые даты — ValidationError (E4)', () => {
     expect(() => assertValidDate('2026-02-30')).toThrow(ValidationError); // не календарная
+    expect(() => assertValidDate('2026-02-29')).toThrow(ValidationError); // 2026 не високосный
+    expect(() => assertValidDate('2028-02-29')).not.toThrow(); // 2028 високосный
     expect(() => assertValidDate('2026-9-5')).toThrow(ValidationError); // формат
     expect(() => assertValidDate('29.09.2026')).toThrow(ValidationError);
     expect(() => assertValidDate('2026-09-10')).not.toThrow();

@@ -8,6 +8,7 @@ import {
   createBookingIfFree,
   listUpcoming,
   toIsoUtc,
+  InvalidDateError,
   type BookingCreate,
 } from '../src/repositories/bookings.js';
 import type { Booking } from '../src/types.js';
@@ -99,10 +100,17 @@ describe('хранилище: схема, seed, репозитории', () => {
     expect(findOverlaps(db, '2026-09-10T12:15:00+03:00', '2026-09-10T12:30:00+03:00')).toHaveLength(1);
   });
 
-  it('toIsoUtc бросает на мусоре, а не возвращает Invalid Date', () => {
+  it('toIsoUtc бросает InvalidDateError на мусоре, а не возвращает Invalid Date', () => {
     expect(() => toIsoUtc('не-дата')).toThrow(/Некорректная дата/);
-    expect(() => toIsoUtc('2026-13-40T00:00:00Z')).toThrow(/Некорректная дата/);
+    expect(() => toIsoUtc('2026-13-40T00:00:00Z')).toThrow(InvalidDateError);
     expect(toIsoUtc('2026-09-10T09:00:00Z')).toBe('2026-09-10T09:00:00.000Z');
+  });
+
+  it('CHECK-ограничения схемы не дают записать битые данные в обход приложения', () => {
+    expect(() => insertBooking(db, booking({ start: '2026-09-10T10:00:00.000Z', end: '2026-09-10T10:00:00.000Z' }))).toThrow(/CHECK constraint failed/);
+    expect(() => insertBooking(db, booking({ start: '2026-09-10T10:00:00.000Z', end: '2026-09-10T09:00:00.000Z' }))).toThrow(/CHECK constraint failed/);
+    expect(() => insertEventType(db, { id: 'bad-7', title: 'x', durationMinutes: 7 })).toThrow(/CHECK constraint failed/);
+    expect(() => insertEventType(db, { id: 'bad-4', title: 'x', durationMinutes: 544 })).toThrow(/CHECK constraint failed/);
   });
 
   it('listUpcoming: фильтр start >= now и сортировка по start', () => {
