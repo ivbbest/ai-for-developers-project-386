@@ -38,9 +38,13 @@
 
 - [x] **0.1** Коммиты изменений ревью в ветку `docs/review-finalization` — цепочкой
   логических коммитов (от 7587641), а не одним сваленным коммитом. PR #2 влит в `main` (92ff6f3).
-- [ ] **0.2** Перепроверить утверждение §6 `project-understanding.md` «у Render/Railway
-  официальных MCP нет» (в `input/docker.txt` ссылается Railway MCP). Не блокатор;
-  сделать не позже этапа 5. Критерий: строка подтверждена или исправлена.
+- [x] **0.2** Перепроверить утверждение §6 `project-understanding.md` «у Render/Railway
+  официальных MCP нет» (в `input/docker.txt` ссылается Railway MCP). Проверено 2026-09-02:
+  утверждение неверно — у Render официальный MCP есть (`render-oss/render-mcp-server`,
+  https://render.com/docs/mcp-server), у Railway MCP встроен в CLI
+  (`railway mcp`; отдельный репозиторий `railwayapp/railway-mcp-server` заархивирован
+  в мае 2026). Исправлено в §6/§8/§9 `project-understanding.md`. На шаг 5 не влияет:
+  деплой — через CLI/UI.
 
 ## Этап 1 — Контракт TypeSpec → OpenAPI — ветка `feat/api-contract`
 

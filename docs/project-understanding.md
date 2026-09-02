@@ -144,7 +144,11 @@ Frontend и Backend реализуются раздельно, связь — �
 - https://www.conventionalcommits.org/ — Conventional Commits. ✅
 - https://github.com/googleapis/release-please и release-please-action. ✅
 - https://cal.com/ — референс-сервис. ✅
-- Render/Railway MCP — на начало 2026 официальных MCP-серверов нет; деплой через CLI/UI.
+- https://render.com/docs/mcp-server — Render MCP: официальный сервер
+  `render-oss/render-mcp-server` (проверено 2026-09-02). ✅
+- Railway MCP — встроен в CLI (`railway mcp`, `railway mcp install [--remote]`);
+  отдельный репозиторий `railwayapp/railway-mcp-server` заархивирован в мае 2026
+  в пользу CLI (проверено 2026-09-02). ✅
 
 ## 7. План работ (по шагам курса)
 
@@ -217,8 +221,10 @@ Frontend и Backend реализуются раздельно, связь — �
 - **Эфемерный диск Render free tier**: SQLite-файл стирается при рестарте/деплое.
   Принимаем: seed при старте пересоздаёт типы; брони живут до рестарта. Миграция на
   Postgres — отдельная задача, контракт от хранилища не зависит.
-- **Утверждение §6** «у Render/Railway официальных MCP нет» — не подтверждено
-  (в курсах ссылается Railway MCP); перепроверить при шаге 5, на результат не влияет.
+- **Утверждение §6** «у Render/Railway официальных MCP нет» — перепроверено 2026-09-02
+  (шаг 0.2 плана): неверно, исправлено в §6. У обеих платформ официальный MCP есть
+  (Render — сервер `render-oss/render-mcp-server`, Railway — встроен в CLI
+  `railway mcp`). На шаг 5 не влияет: деплой остаётся через CLI/UI, MCP опционален.
 
 ## 9. Детальный план реализации (как будет работать агент)
 
@@ -377,7 +383,8 @@ Frontend и Backend реализуются раздельно, связь — �
    `curl` к порту — сервис отвечает.
 3. **Деплой на Render** (основной): New Web Service → Build from Dockerfile → Port из PORT →
    env PORT → Deploy → публичный URL `https://<service>.onrender.com`.
-   Запасной — Railway (тот же образ, PORT, `*.up.railway.app`). Официальных MCP нет → CLI/UI.
+   Запасной — Railway (тот же образ, PORT, `*.up.railway.app`). Официальные MCP есть
+   (§6), но деплой — через CLI/UI: MCP для курса не требуется.
 4. **Публичная ссылка** — в README.
 5. **Проверка**: сервис отвечает по публичному URL и порту; приложение автостартует в контейнере.
 
