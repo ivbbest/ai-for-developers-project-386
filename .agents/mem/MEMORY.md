@@ -32,6 +32,8 @@
 - 2026-08-30 | project | Проверка итога: git untracked = AGENTS.md, tasks.md, .gitignore; .agents/.opencode игнорируются | context.md
 - 2026-08-30 | project | Структура памяти: tasks.md (чек-лист, локально) + mem/ (MEMORY-индекс, learnings, топики); лимиты контекста — правилами в AGENTS.md, без opencode.json; Learnings — отдельным файлом | контекст-инжиниринг 2026-08-30
 - 2026-08-30 | project | Решение: лайт-SDD; каркас (docs/specs/ + шаблон) — с первой dev-задачей курса, не раньше | план 2026-08-30
+- 2026-09-02 | project | **Этап 1 (контракт) готов, ветка `feat/api-contract` ждёт мержа**: TypeSpec 1.15 → `contract/dist/openapi.yaml` (коммитится), Prism-smoke 29 проверок (`npm run smoke -w contract`); в C7 добавлен код `duplicate_id` (409 «id занят», E13); E8 закрыт `seal-object-schemas`; `durationMinutes` — `@multipleOf(5)` | issue #6
+- 2026-09-02 | project | Шаг 0.2 закрыт (ветка `docs/mcp-claim-check`): официальный MCP есть у обеих площадок — Render `render-oss/render-mcp-server`, Railway в CLI (`railway mcp`); §6/§8/§9 исправлены; деплой этапа 5 — по-прежнему CLI/UI | 614d83e
 
 ## reference
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8

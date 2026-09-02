@@ -165,6 +165,24 @@
   запиннен на SHA v1.4.9; план — 2.1b все 5 ручек, 2.2/3.5 VITE_API_TARGET, 3.1 сервис
   now()+NOW, 4.1 браузеры Playwright; три review-findings-дока перенесены в архив | ветка docs/review-fixes
 
+- 2026-09-02 | PR #8 — approve бота без замечаний; PR #7 после фикса CI зелёный (sync/build/review);
+  по второму раунду ревью исправлены M1 (readiness smoke проверяет ответ Prism, а не только порт)
+  и m3 (exec-бит dev.sh через update-index); m2 уже был исправлен в head; M2/M3/m1/m4–m6 разобраны
+  без изменений (причины в комментарии к PR) | ветка feat/api-contract c95b5cd..d945881
+- 2026-09-02 | PR #7: contract-sync упал в контейнере («Not a git repository» — git run-шагов не видит репозиторий checkout'а); проверка переписана на cp+diff без git, зелёный/красный подтверждены локально; по ревью-боту: trap в smoke консолидирован, json-schema запинен exact | ветка feat/api-contract ca3b8bd..eadf42f
+- 2026-09-02 | Этап 1 закрыт полностью (шаг 1.7 по согласию владельца): workflow
+  `contract-sync.yml` (npm ci → compile → diff артефакта, контейнер node:24); критерий
+  «красный на рассинхроне» проверен локальной симуляцией (зелёный/красный) | ветка feat/api-contract a25051f
+- 2026-09-02 | Шаг 0.2: перепроверено утверждение §6 «у Render/Railway официальных MCP
+  нет» — неверно: у Render официальный сервер render-oss/render-mcp-server
+  (render.com/docs/mcp-server), у Railway MCP встроен в CLI (`railway mcp`, отдельный
+  репозиторий заархивирован в мае 2026); §6/§8/§9 исправлены, 0.2 закрыт в плане | ветка docs/mcp-claim-check 614d83e
+- 2026-09-02 | Этап 1 (контракт) готов в ветке: issue #6; обёртка node:24 (v24.20.0,
+  better-sqlite3 13.0.3 из prebuild); монорепо workspaces; contract/ TypeSpec 1.15
+  (models/routes, @opExample для 404/409); dist/openapi.yaml коммитится; Prism-smoke
+  29 проверок зелёный; по ревью добавлены: код duplicate_id (409 «id занят») со синхронизацией спеки и issue, @multipleOf(5) через @typespec/json-schema, seal-object-schemas
+  (E8), 413 на POST (E18); спека → «готово» | ветка feat/api-contract b53c267..a48da84
+
 ## Карта памяти (.agents)
 
 | Файл | Роль |

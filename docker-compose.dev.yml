@@ -1,0 +1,16 @@
+# Dev-обёртка: все команды разработки (tsp, vite, npm, тесты) — в контейнере node:24.
+# Причина: в WSL нет Linux-`node` (npm — Windows-обёртка), DrvFs /mnt/e медленный,
+# а Linux-контейнер совпадает с прод-образом (нативные модули консистентны).
+# Использование: ./scripts/dev.sh <cmd…>  (или docker compose -f docker-compose.dev.yml run --rm dev <cmd…>)
+services:
+  dev:
+    image: node:24
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    environment:
+      # не мешать в неинтерактивном прогоне (npm update-notifier, color)
+      - NO_COLOR=1
+    stdin_open: true
+    tty: true
+    command: bash

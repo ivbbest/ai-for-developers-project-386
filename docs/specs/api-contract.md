@@ -1,8 +1,9 @@
 # Спека: API-контракт (Design First)
 
-Статус: решения зафиксированы (по ревью и аудиту 2026-09-01, правки A1–A5 из
-`architecture-audit.md` (архив: `.agents/archive/`, локально) внесены); реализация TypeSpec — этап 1
-Связанный issue: (создать при старте этапа 1, шаг 1.1)
+Статус: готово — этап 1 реализован: TypeSpec в `contract/`, артефакт
+`contract/dist/openapi.yaml` (коммитится), smoke по Prism зелёный
+(`./scripts/dev.sh npm run smoke -w contract`)
+Связанный issue: https://github.com/ivbbest/ai-for-developers-project-386/issues/6
 Дата: 2026-09-01
 
 ## Цель
@@ -21,7 +22,7 @@
 | C4 | Окно записи — 14 календарных дней, включая сегодня (сегодня … сегодня+13) | точная трактовка «14 дней с текущей даты»; дата считается в MSK |
 | C5 | Идентификаторы: у EventType — читаемый `id` задаёт владелец (паттерн `^[a-z0-9-]{1,40}$`), у Booking — server-side uuid | формулировка курса: «владелец задает id»; читаемый id стабилен в seed/e2e; броням внешний id не нужен |
 | C6 | `slug` — нет; `DELETE /event-types` — нет; `GET /event-types/{id}` — нет | вне требований курса (YAGNI); каталог отдаёт все поля для карточки |
-| C7 | Ошибки — единая модель `Error { code, message }`; коды: `validation`, `not_found`, `slot_conflict`, `slot_out_of_window`, `payload_too_large`; **все** ответы `/api/*` (4xx/5xx) — только она: дефолтные обработчики Express (413 body-parser, 404 неизвестного `/api/*`-пути, 5xx) оборачиваются единым JSON-хендлером | валидируемый контракт для двух независимых реализаций; иначе на 413/неизвестном пути фронт получает HTML вместо `Error` (N2) |
+| C7 | Ошибки — единая модель `Error { code, message }`; коды: `validation`, `not_found`, `slot_conflict`, `slot_out_of_window`, `payload_too_large`, `duplicate_id`; **все** ответы `/api/*` (4xx/5xx) — только она: дефолтные обработчики Express (413 body-parser, 404 неизвестного `/api/*`-пути, 5xx) оборачиваются единым JSON-хендлером | валидируемый контракт для двух независимых реализаций; иначе на 413/неизвестном пути фронт получает HTML вместо `Error` (N2) |
 
 ## Доменные сущности
 
@@ -70,7 +71,7 @@
 |---|---|---|---|---|
 | GET | `/api/event-types` | Каталог типов (id, title, description, durationMinutes) | 200 `EventType[]` | — |
 | GET | `/api/event-types/{id}/slots?date=YYYY-MM-DD` | Сетка слотов дня со статусами (`date` — обязательный `@query`) | 200 `Slot[]` | 404 тип не найден; 400 дата кривая или параметр не передан (E20); `slot_out_of_window` — дата вне C4 (200 c `[]` **не** отдаём, чтобы фронт различал «нет слотов» и «вне окна») |
-| POST | `/api/bookings` | Создать бронь | 201 `Booking` | 400 валидация; 404 типа нет; `slot_conflict` → 409 |
+| POST | `/api/bookings` | Создать бронь | 201 `Booking` | 400 валидация; 404 типа нет; `slot_conflict` → 409; 413 `payload_too_large` (E18) |
 
 Тело `POST /api/bookings` (`BookingCreate`):
 ```
@@ -83,7 +84,7 @@
 | Метод | Путь | Назначение | Успех | Ошибки |
 |---|---|---|---|---|
 | GET | `/api/bookings` | Предстоящие встречи всех типов (`start ≥ now`), сортировка по `start` | 200 `Booking[]` | — |
-| POST | `/api/event-types` | Создать тип | 201 `EventType` | 400 валидация; 409 id занят |
+| POST | `/api/event-types` | Создать тип | 201 `EventType` | 400 валидация; 409 `duplicate_id` (id занят); 413 `payload_too_large` (E18) |
 
 ## Правила занятости (ядро)
 
@@ -127,11 +128,13 @@
 
 ```
 Error { code: "validation" | "not_found" | "slot_conflict" | "slot_out_of_window"
-                   | "payload_too_large",
+                   | "payload_too_large" | "duplicate_id",
         message: string }   // человекочитаемый, RU
 ```
 Соответствие HTTP: validation→400, not_found→404, slot_conflict→409,
-slot_out_of_window→400, payload_too_large→413. Все ответы `/api/*`
+slot_out_of_window→400, payload_too_large→413, duplicate_id→409.
+`duplicate_id` добавлен при реализации контракта (этап 1): для 409 «id занят»
+в C7 не было кода, а `slot_conflict` — про слоты, не про id. Все ответы `/api/*`
 (4xx и 5xx) — только эта модель: единый JSON-хендлер бэкенда оборачивает
 дефолтные ответы Express (413 от body-parser, 404 unmatched-маршрута,
 необработанные 5xx) — кейсы E18–E19.
@@ -158,14 +161,16 @@ slot_out_of_window→400, payload_too_large→413. Все ответы `/api/*`
 
 ## Критерии приёмки (hexlet-check / шаг 1 курса)
 
-- [ ] В репозитории есть TypeSpec-спецификация (`contract/`), фиксирующая контракт.
-- [ ] Спека покрывает сценарии владельца (создать тип, список броней) и гостя
+- [x] В репозитории есть TypeSpec-спецификация (`contract/`), фиксирующая контракт.
+- [x] Спека покрывает сценарии владельца (создать тип, список броней) и гостя
       (каталог типов, сетка слотов со статусами, создать бронирование, конфликт 409).
-- [ ] Из TypeSpec генерируется OpenAPI: `contract/dist/openapi.yaml` (коммитится).
-- [ ] `npx tsp compile . --warn-as-error` — без ошибок; Prism поднимает мок по
+- [x] Из TypeSpec генерируется OpenAPI: `contract/dist/openapi.yaml` (коммитится).
+- [x] `npx tsp compile . --warn-as-error` — без ошибок; Prism поднимает мок по
       сгенерированному файлу, smoke-проход по всем ручкам (200/201/400/404/409;
-      404/409 — через заголовок `Prefer: code=NNN`: Prism без состояния и отдаёт
+      404/409 — через заголовок `Prefer: code=NNN`: Prism без состояния и отдаёт
       заготовленный ответ по схеме, stateful-сценарий — на стабе этапа 2).
+      Примечание из практики: Prism 5.16 игнорирует относительный `servers.url`
+      и монтирует пути с корня — префикс `/api` (C1) smoke проверяет по yaml.
 
 ## Ограничения
 
@@ -182,3 +187,9 @@ slot_out_of_window→400, payload_too_large→413. Все ответы `/api/*`
 - План работ по этапам — `docs/work-plan.md`; разбор превентивных проверок —
   `retrospective.md` (архив: `.agents/archive/`, локально).
 - Анализ входных материалов — `docs/project-understanding.md`.
+- `durationMinutes` «кратно 5»: в контракте — `@multipleOf(5)` через
+  `@typespec/json-schema` (optional peer эмиттера openapi3); в сгенерированном
+  yaml — `multipleOf: 5`, проверяется и smoke, и бэкендом (E12).
+- E8 (неизвестные поля тела → 400): сгенерированные схемы закрыты
+  (`seal-object-schemas` → `additionalProperties: { not: {} }`) — строгость
+  зафиксирована в контракте, а не только в zod-валидации бэкенда.
