@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeAll, afterAll, beforeEach, describe, expect, it } from 'vitest';
@@ -20,7 +20,7 @@ function makeDb(): Db {
   return db;
 }
 
-const app = createApp(makeDb(), NOW);
+const app = createApp(makeDb(), { nowFn: NOW });
 
 function slotDate(offsetDays = 0): string {
   // «завтра» от NOW в MSK
@@ -33,7 +33,7 @@ describe('GET /api/event-types/:id/slots', () => {
   let api: ReturnType<typeof createApp>;
   beforeEach(() => {
     db = makeDb();
-    api = createApp(db, NOW);
+    api = createApp(db, { nowFn: NOW });
   });
 
   it('сетка дня: 36 слотов 15-мин, все available', async () => {
@@ -92,7 +92,7 @@ describe('POST /api/bookings (3.3)', () => {
   let api: ReturnType<typeof createApp>;
   beforeEach(() => {
     db = makeDb();
-    api = createApp(db, NOW);
+    api = createApp(db, { nowFn: NOW });
   });
 
   const booking = (over: Record<string, unknown> = {}) => ({
@@ -214,7 +214,7 @@ describe('POST /api/event-types (3.4)', () => {
   let api: ReturnType<typeof createApp>;
   beforeEach(() => {
     db = makeDb();
-    api = createApp(db, NOW);
+    api = createApp(db, { nowFn: NOW });
   });
 
   const type = (over: Record<string, unknown> = {}) => ({
@@ -262,7 +262,7 @@ describe('GET /api/bookings (3.4, E16)', () => {
   let api: ReturnType<typeof createApp>;
   beforeEach(() => {
     db = makeDb();
-    api = createApp(db, NOW);
+    api = createApp(db, { nowFn: NOW });
   });
 
   it('только start >= now, сортировка по start', async () => {
@@ -304,8 +304,8 @@ describe('E14: рестарт сервера на существующей БД'
     const first = openDb(path);
     migrate(first);
     seed(first);
-    void createApp(first, NOW); // приложение пересоздаётся как при рестарте процесса
-    const res = await request(createApp(first, NOW)).post('/api/bookings').send({
+    void createApp(first, { nowFn: NOW }); // приложение пересоздаётся как при рестарте процесса
+    const res = await request(createApp(first, { nowFn: NOW })).post('/api/bookings').send({
       eventTypeId: 'meet-15',
       start: '2026-09-10T06:00:00.000Z',
       name: 'Г',
@@ -317,11 +317,54 @@ describe('E14: рестарт сервера на существующей БД'
     const second = openDb(path);
     migrate(second);
     seed(second);
-    const types = await request(createApp(second, NOW)).get('/api/event-types');
+    const types = await request(createApp(second, { nowFn: NOW })).get('/api/event-types');
     expect(types.body).toHaveLength(2);
-    const bookings = await request(createApp(second, NOW)).get('/api/bookings');
+    const bookings = await request(createApp(second, { nowFn: NOW })).get('/api/bookings');
     expect(bookings.body).toHaveLength(1);
     expect(bookings.body[0].name).toBe('Г');
     second.close();
+  });
+});
+
+
+describe('3.5: раздача сборки фронта одним портом', () => {
+  let dir: string;
+  let api: ReturnType<typeof createApp>;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'cal-dist-'));
+    writeFileSync(join(dir, 'index.html'), '<!doctype html><title>cal-com</title>');
+    mkdirSync(join(dir, 'assets'));
+    writeFileSync(join(dir, 'assets', 'app.js'), 'console.log(1)');
+    api = createApp(makeDb(), { nowFn: NOW, staticDir: dir });
+  });
+
+  it('GET / и статика отдаются файлами', async () => {
+    const root = await request(api).get('/');
+    expect(root.status).toBe(200);
+    expect(root.text).toContain('cal-com');
+    const asset = await request(api).get('/assets/app.js');
+    expect(asset.status).toBe(200);
+    expect(asset.text).toContain('console.log');
+  });
+
+  it('SPA-fallback: несуществующий не-api путь отдаёт index.html', async () => {
+    const res = await request(api).get('/book/meet-15/confirm');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('cal-com');
+  });
+
+  it('E19: /api/* в fallback не проваливается — JSON 404', async () => {
+    const res = await request(api).get('/api/whatever');
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe('not_found');
+    const post = await request(api).post('/api/whatever').send({});
+    expect(post.status).toBe(404);
+    expect(post.body.code).toBe('not_found');
+  });
+
+  it('без каталога сборки (dev) — API-only, / не отдаётся', async () => {
+    const only = createApp(makeDb(), { nowFn: NOW, staticDir: false });
+    const res = await request(only).get('/');
+    expect(res.status).toBe(404);
   });
 });

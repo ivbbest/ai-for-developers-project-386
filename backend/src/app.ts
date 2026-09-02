@@ -4,9 +4,17 @@ import { apiErrorHandler } from './middleware/errors.js';
 import { HttpError } from './errors.js';
 import { eventTypesRouter } from './routes/eventTypes.js';
 import { bookingsRouter } from './routes/bookings.js';
+import { mountStatic } from './static.js';
 import { now, type NowFn } from './services/now.js';
 
-export function createApp(db: Db, nowFn: NowFn = now): Express {
+export interface AppOptions {
+  nowFn?: NowFn;
+  // каталог сборки фронта (frontend/dist); undefined/false — API-only (dev)
+  staticDir?: string | false;
+}
+
+export function createApp(db: Db, opts: AppOptions = {}): Express {
+  const nowFn = opts.nowFn ?? now;
   const app = express();
   app.use(express.json({ limit: '64kb' }));
   app.use('/api/event-types', eventTypesRouter(db, nowFn));
@@ -16,6 +24,8 @@ export function createApp(db: Db, nowFn: NowFn = now): Express {
   app.use('/api', (_req, _res, next) =>
     next(new HttpError(404, 'not_found', 'Маршрут не найден')),
   );
+  // статика — после API-маршрутов; GET /api/… сюда не доходит
+  if (opts.staticDir) mountStatic(app, opts.staticDir);
   // единый JSON-хендлер ошибок — последним (C7, E18–E19)
   app.use(apiErrorHandler);
   return app;
