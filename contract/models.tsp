@@ -2,8 +2,10 @@
 // Owner — не модель, а @doc на админ-интерфейсе (routes.tsp): unreferenced-модель
 // не попадает в сгенерированный openapi.yaml (аудит N4).
 import "@typespec/http";
+import "@typespec/json-schema";
 
 using TypeSpec.Http;
+using TypeSpec.JsonSchema;
 
 @pattern("^[a-z0-9-]{1,40}$", "идентификатор типа события: строчные буквы, цифры, дефисы")
 @doc("Читаемый id типа события; задаёт владелец, уникален (C5)")
@@ -11,7 +13,8 @@ scalar EventTypeId extends string;
 
 @minValue(5)
 @maxValue(540)
-@doc("Длительность в минутах: 5–540, кратно 5 (E12; делимость проверяет бэкенд — в OpenAPI/TypeSpec 1.15 нет multipleOf)")
+@multipleOf(5)
+@doc("Длительность в минутах: 5–540, кратно 5 (E12)")
 scalar DurationMinutes extends int32;
 
 @minLength(1)

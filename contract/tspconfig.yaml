@@ -8,3 +8,5 @@ options:
     emitter-output-dir: "{project-root}/dist"
     file-type: yaml
     output-file: openapi.yaml
+    # E8: неизвестные поля тела → 400 — схема строгая и для фронта, и для бэка
+    seal-object-schemas: true

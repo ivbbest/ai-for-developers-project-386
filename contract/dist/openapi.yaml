@@ -198,6 +198,8 @@ components:
           type: string
           format: date-time
           description: Момент создания брони (UTC)
+      additionalProperties:
+        not: {}
       description: Бронирование
     BookingCreate:
       type: object
@@ -219,6 +221,8 @@ components:
           $ref: '#/components/schemas/GuestEmail'
         notes:
           $ref: '#/components/schemas/BookingNotes'
+      additionalProperties:
+        not: {}
       description: 'Тело POST /api/bookings: end сервер считает сам'
     BookingNotes:
       type: string
@@ -229,7 +233,8 @@ components:
       format: int32
       minimum: 5
       maximum: 540
-      description: 'Длительность в минутах: 5–540, кратно 5 (E12; делимость проверяет бэкенд — в OpenAPI/TypeSpec 1.15 нет multipleOf)'
+      multipleOf: 5
+      description: 'Длительность в минутах: 5–540, кратно 5 (E12)'
     Error:
       type: object
       required:
@@ -249,6 +254,8 @@ components:
         message:
           type: string
           description: Человекочитаемое сообщение на русском
+      additionalProperties:
+        not: {}
       description: 'Единая модель ошибок: все ответы /api/* (4xx/5xx) — только она (C7, E18–E19); message — человекочитаемый, RU'
     EventDescription:
       type: string
@@ -276,6 +283,8 @@ components:
           $ref: '#/components/schemas/EventDescription'
         durationMinutes:
           $ref: '#/components/schemas/DurationMinutes'
+      additionalProperties:
+        not: {}
       description: 'Тип события: что можно забронировать'
     EventTypeId:
       type: string
@@ -311,6 +320,8 @@ components:
             - available
             - booked
           description: 'Статус слота: available — свободен, booked — занят пересечением с бронью'
+      additionalProperties:
+        not: {}
       description: 'Слот сетки дня. Сетка: от 09:00 MSK с шагом durationMinutes, пока end <= 18:00 MSK; прошедшие слоты текущего дня исключены; занятые возвращаются со статусом booked'
 servers:
   - url: /api
