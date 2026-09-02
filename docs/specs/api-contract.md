@@ -1,7 +1,7 @@
 # Спека: API-контракт (Design First)
 
 Статус: решения зафиксированы (по ревью и аудиту 2026-09-01, правки A1–A5 из
-`docs/architecture-audit.md` внесены); реализация TypeSpec — этап 1
+`architecture-audit.md` (архив: `.agents/archive/`, локально) внесены); реализация TypeSpec — этап 1
 Связанный issue: (создать при старте этапа 1, шаг 1.1)
 Дата: 2026-09-01
 
@@ -176,9 +176,9 @@ slot_out_of_window→400, payload_too_large→413. Все ответы `/api/*`
 
 - Ревью-находки К1–К7 и их решения — этот файл (C1–C7, «Правила занятости»).
 - Аудит второго прохода (N1–N9, план правок A–D, верификация фактов по исходникам
-  инструментов) — `docs/architecture-audit.md`; правки A1–A5 внесены в этот файл
+  инструментов) — `architecture-audit.md` (архив: `.agents/archive/`, локально); правки A1–A5 внесены в этот файл
   и `docs/work-plan.md`.
 - Детальный план реализации — `docs/project-understanding.md` §9 (шаг 1), §11 (решения 7–16).
 - План работ по этапам — `docs/work-plan.md`; разбор превентивных проверок —
-  `docs/retrospective.md`.
+  `retrospective.md` (архив: `.agents/archive/`, локально).
 - Анализ входных материалов — `docs/project-understanding.md`.
