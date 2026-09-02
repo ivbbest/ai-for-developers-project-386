@@ -48,11 +48,8 @@ model EventType {
   durationMinutes: DurationMinutes;
 }
 
-@doc("Статус слота: свободен/занят (пересечение с бронями)")
-enum SlotStatus {
-  available: "available",
-  booked: "booked",
-}
+// available — свободен, booked — занят пересечением с бронью
+alias SlotStatus = "available" | "booked";
 
 @doc("Слот сетки дня. Сетка: от 09:00 MSK с шагом durationMinutes, пока end <= 18:00 MSK; прошедшие слоты текущего дня исключены; занятые возвращаются со статусом booked")
 model Slot {
@@ -62,7 +59,7 @@ model Slot {
   @doc("Конец (UTC)")
   end: utcDateTime;
 
-  @doc("available — свободен, booked — занято пересечением с бронью")
+  @doc("Статус слота: available — свободен, booked — занят пересечением с бронью")
   status: SlotStatus;
 }
 
@@ -105,18 +102,20 @@ model BookingCreate {
   notes?: BookingNotes;
 }
 
-@doc("Код ошибки: validation→400, not_found→404, slot_conflict→409, slot_out_of_window→400, payload_too_large→413 (C7)")
-enum ErrorCode {
-  validation: "validation",
-  not_found: "not_found",
-  slot_conflict: "slot_conflict",
-  slot_out_of_window: "slot_out_of_window",
-  payload_too_large: "payload_too_large",
-}
+// validation→400, not_found→404, slot_conflict→409, slot_out_of_window→400,
+// payload_too_large→413, duplicate_id→409 (C7)
+alias ErrorCode =
+  | "validation"
+  | "not_found"
+  | "slot_conflict"
+  | "slot_out_of_window"
+  | "payload_too_large"
+  | "duplicate_id";
 
 @error
 @doc("Единая модель ошибок: все ответы /api/* (4xx/5xx) — только она (C7, E18–E19); message — человекочитаемый, RU")
 model Error {
+  @doc("Код ошибки; соответствие HTTP — в описании контракта (C7)")
   code: ErrorCode;
 
   @doc("Человекочитаемое сообщение на русском")

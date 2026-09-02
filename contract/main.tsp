@@ -1,6 +1,7 @@
 import "@typespec/http";
 import "@typespec/rest";
 import "./models.tsp";
+import "./routes.tsp";
 
 using TypeSpec.Http;
 
