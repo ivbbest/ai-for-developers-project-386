@@ -165,6 +165,16 @@
   запиннен на SHA v1.4.9; план — 2.1b все 5 ручек, 2.2/3.5 VITE_API_TARGET, 3.1 сервис
   now()+NOW, 4.1 браузеры Playwright; три review-findings-дока перенесены в архив | ветка docs/review-fixes
 
+- 2026-09-02 | Шаг 0.2: перепроверено утверждение §6 «у Render/Railway официальных MCP
+  нет» — неверно: у Render официальный сервер render-oss/render-mcp-server
+  (render.com/docs/mcp-server), у Railway MCP встроен в CLI (`railway mcp`, отдельный
+  репозиторий заархивирован в мае 2026); §6/§8/§9 исправлены, 0.2 закрыт в плане | ветка docs/mcp-claim-check 614d83e
+- 2026-09-02 | Этап 1 (контракт) готов в ветке: issue #6; обёртка node:24 (v24.20.0,
+  better-sqlite3 13.0.3 из prebuild); монорепо workspaces; contract/ TypeSpec 1.15
+  (models/routes, @opExample для 404/409); dist/openapi.yaml коммитится; Prism-smoke
+  29 проверок зелёный; по ревью добавлены: код duplicate_id (409 «id занят») со синхронизацией спеки и issue, @multipleOf(5) через @typespec/json-schema, seal-object-schemas
+  (E8), 413 на POST (E18); спека → «готово» | ветка feat/api-contract b53c267..a48da84
+
 ## Карта памяти (.agents)
 
 | Файл | Роль |

@@ -84,26 +84,28 @@
       cross-ссылки и команды очистки веток в аудитах исправлены при верификации;
       правки F1.1–F7.1 / A6–A8 внесены в план и этот реестр (ветка `docs/plan-fixes`)
 
-### Шаг 1 — Проектирование приложения (Design First / TypeSpec)
+### Шаг 1 — Проектирование приложения (Design First / TypeSpec) — ветка `feat/api-contract`, issue #6
 Детали каждой подзадачи — `docs/project-understanding.md` §9 «Шаг 1» и спека
 `docs/specs/api-contract.md` (модели/ручки/коды уже зафиксированы — кодеру не решать).
 
-- [ ] GitHub Issue «API-контракт» (текст — из спеки)
-- [ ] Обёртка dev-окружения: скрипт/compose `node:24` (volume на проект) — §11 решение 7;
-      проверка: `npm i better-sqlite3` в контейнере ставится из prebuild (аудит N8)
-- [ ] Корневой `package.json` монорепо: NPM workspaces `contract`, `frontend`,
-      `backend` (`e2e` — не включать, отдельная установка; §11 решения 3–4, аудит F2)
-- [ ] Каркас `contract/`: `package.json` (пин `@typespec/*`), `tspconfig.yaml`
-      (emitter openapi3, `output-file-type: yaml`, вывод `dist/`), `main.tsp` (`@server /api`)
-- [ ] `models.tsp` по спеке: EventType, Slot(+status), Booking, BookingCreate, Error
-      (`Owner` — не модель, а `@doc`: в openapi.yaml unreferenced-модели не попадают)
-- [ ] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409, `date` — required `@query`;
-      для 404/409 — явные `@example` (тело `Error`, детерминированный smoke — аудит N14)
-- [ ] `npx tsp compile . --warn-as-error` → `contract/dist/openapi.yaml` (коммитим)
-- [ ] Smoke через Prism: `curl` по всем ручкам; 404/409 — заголовок `Prefer: code=NNN`
-      (Prism без состояния; stateful-сценарий — стаб на этапе 2, 2.1b)
+- [x] GitHub Issue «API-контракт» (текст — из спеки) — issue #6, ссылка в шапке спеки (b53c267)
+- [x] Обёртка dev-окружения: `docker-compose.dev.yml` + `scripts/dev.sh` (node:24, volume на
+      проект) — проверено: node v24.20.0, better-sqlite3 13.0.3 из prebuild за ~4 с без тулчейна (e34ebc0)
+- [x] Корневой `package.json` монорепо: NPM workspaces `contract`, `frontend`, `backend`
+      (`e2e` — не включать); `npm ci`/compile из корня работают (4bf7f03)
+- [x] Каркас `contract/`: `package.json` (пин @typespec 1.15.0/rest 0.85.0 + json-schema),
+      `tspconfig.yaml` (yaml в `{project-root}/dist`, `seal-object-schemas`), `main.tsp` (`@server /api`)
+- [x] `models.tsp` по спеке: EventType, Slot(+status), Booking, BookingCreate, Error;
+      `Owner` — `@doc` на админ-интерфейсе; `@multipleOf(5)` через @typespec/json-schema (c6942de, dba2c29)
+- [x] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409 (+413 на POST, E18),
+      `date` — required `@query`; 404/409 — `@opExample` тел `Error`; код `duplicate_id`
+      добавлен в C7 (409 «id занят») со синхронизацией спеки (def5343, 2cdd657)
+- [x] `tsp compile . --warn-as-error` чистый → `contract/dist/openapi.yaml` закоммичен (756a25e)
+- [x] Smoke через Prism (`contract/smoke.sh`, `npm run smoke -w contract`): 29 проверок —
+      все ручки/коды, E8/E12/E20; префикс /api по yaml (Prism игнорирует относительный servers.url)
 - [ ] (после явного «да» пользователя) CI-проверка синхронизации openapi.yaml (compile → diff)
-- [ ] `docs/specs/api-contract.md` → статус «готово»; ритуал закрытия сессии
+- [x] `docs/specs/api-contract.md` → статус «готово», критерии отмечены; ритуал закрытия —
+      этим обновлением памяти; CI-проверка синхронизации (1.7) — ждёт явного согласия владельца
 
 ### Дальнейшие шаги (по ходу курса)
 - Шаг 2: Фронтенд (`frontend/`, Vite+React+TS+shadcn/ui, страницы по §3/§9/§10;

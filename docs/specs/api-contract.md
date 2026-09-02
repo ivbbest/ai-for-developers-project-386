@@ -1,7 +1,8 @@
 # Спека: API-контракт (Design First)
 
-Статус: решения зафиксированы (по ревью и аудиту 2026-09-01, правки A1–A5 из
-`architecture-audit.md` (архив: `.agents/archive/`, локально) внесены); реализация TypeSpec — этап 1
+Статус: готово — этап 1 реализован: TypeSpec в `contract/`, артефакт
+`contract/dist/openapi.yaml` (коммитится), smoke по Prism зелёный
+(`./scripts/dev.sh npm run smoke -w contract`)
 Связанный issue: https://github.com/ivbbest/ai-for-developers-project-386/issues/6
 Дата: 2026-09-01
 
@@ -160,14 +161,16 @@ slot_out_of_window→400, payload_too_large→413, duplicate_id→409.
 
 ## Критерии приёмки (hexlet-check / шаг 1 курса)
 
-- [ ] В репозитории есть TypeSpec-спецификация (`contract/`), фиксирующая контракт.
-- [ ] Спека покрывает сценарии владельца (создать тип, список броней) и гостя
+- [x] В репозитории есть TypeSpec-спецификация (`contract/`), фиксирующая контракт.
+- [x] Спека покрывает сценарии владельца (создать тип, список броней) и гостя
       (каталог типов, сетка слотов со статусами, создать бронирование, конфликт 409).
-- [ ] Из TypeSpec генерируется OpenAPI: `contract/dist/openapi.yaml` (коммитится).
-- [ ] `npx tsp compile . --warn-as-error` — без ошибок; Prism поднимает мок по
+- [x] Из TypeSpec генерируется OpenAPI: `contract/dist/openapi.yaml` (коммитится).
+- [x] `npx tsp compile . --warn-as-error` — без ошибок; Prism поднимает мок по
       сгенерированному файлу, smoke-проход по всем ручкам (200/201/400/404/409;
-      404/409 — через заголовок `Prefer: code=NNN`: Prism без состояния и отдаёт
+      404/409 — через заголовок `Prefer: code=NNN`: Prism без состояния и отдаёт
       заготовленный ответ по схеме, stateful-сценарий — на стабе этапа 2).
+      Примечание из практики: Prism 5.16 игнорирует относительный `servers.url`
+      и монтирует пути с корня — префикс `/api` (C1) smoke проверяет по yaml.
 
 ## Ограничения
 
