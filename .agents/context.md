@@ -165,6 +165,9 @@
   запиннен на SHA v1.4.9; план — 2.1b все 5 ручек, 2.2/3.5 VITE_API_TARGET, 3.1 сервис
   now()+NOW, 4.1 браузеры Playwright; три review-findings-дока перенесены в архив | ветка docs/review-fixes
 
+- 2026-09-02 | Раунд 3 ревью PR #10: graceful shutdown (SIGTERM→close→exit 0, проверено на dist),
+  явный выход при ошибке listen, insertEventType возвращает changes (для 409 в 3.4) + тест; m3 бота
+  разобран (предикат пересечения покрывает straddling), M3/m1 — по скоупу плана | 0833e04
 - 2026-09-02 | Раунд 2 ревью PR #10: guard+тест на toIsoUtc (80f2db8; механизм бота про
   «Invalid Date в колонке» неверен — toISOString бросает RangeError, правка ради диагностики);
   FK-заметка принята на 3.3 с поправкой: контракт для неизвестного типа — 404 not_found, не 422 |
