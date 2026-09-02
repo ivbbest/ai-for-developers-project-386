@@ -69,6 +69,16 @@
 - [x] Опечатки/статусы в docs и памяти синхронизированы (docs/, AGENTS.md, .agents/*)
 - [x] **Коммит** обновлённых `docs/`, `AGENTS.md`, `.agents/` — ветка `docs/review-finalization`,
       цепочка атомарных коммитов (от 7587641); PR #2 влит в main (92ff6f3)
+- [x] **Аудит второго прохода** (N1–N9) зафиксирован: `docs/architecture-audit.md`
+      (ветка `docs/audit`, dbaad61); верификация по исходникам: N7 — ложная тревога
+      (`--warn-as-error` есть у `tsp compile`), N1 — уточнён (Prism `Prefer: code=`
+      для 404/409; stateful-сценарий — нет), N4 — фикс через прозу спеки + `@doc`
+- [x] **Правки A1–A5 внесены** (ветка `docs/audit-fixes`): спека (модель ошибок +
+      `payload_too_large`, E18–E20, сплит E3, `Owner`, `date` обязателен), план
+      (стаб 2.1b, критерии 1.6/2.2/2.3/3.5, e2e-время N5, порт стаба 4020),
+      понимание (§4/§5/§8/§9/§10/§11, решения 15–16), путеводитель (C7, E1–E20)
+- [x] **Стек финализирован 2026-09-01** (решения владельца по аудиту: Q1 — стаб,
+      Q2 — расширение `Error`): см. секцию «Стек проекта» ниже и §5/§11 понимания
 
 ### Шаг 1 — Проектирование приложения (Design First / TypeSpec)
 Детали каждой подзадачи — `docs/project-understanding.md` §9 «Шаг 1» и спека
@@ -79,22 +89,29 @@
 - [ ] Каркас `contract/`: `package.json` (пин `@typespec/*`), `tspconfig.yaml`
       (emitter openapi3, `output-file-type: yaml`, вывод `dist/`), `main.tsp` (`@server /api`)
 - [ ] `models.tsp` по спеке: EventType, Slot(+status), Booking, BookingCreate, Error
-- [ ] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409
+      (`Owner` — не модель, а `@doc`: в openapi.yaml unreferenced-модели не попадают)
+- [ ] `routes.tsp` по спеке: 5 ручек, коды 200/201/400/404/409, `date` — required `@query`
 - [ ] `npx tsp compile . --warn-as-error` → `contract/dist/openapi.yaml` (коммитим)
-- [ ] Smoke через Prism: `curl` по всем ручкам (включая 409-путь)
+- [ ] Smoke через Prism: `curl` по всем ручкам; 404/409 — заголовок `Prefer: code=NNN`
+      (Prism без состояния; stateful-сценарий — стаб на этапе 2, 2.1b)
 - [ ] (после явного «да» пользователя) CI-проверка синхронизации openapi.yaml (compile → diff)
 - [ ] `docs/specs/api-contract.md` → статус «готово»; ритуал закрытия сессии
 
 ### Дальнейшие шаги (по ходу курса)
 - Шаг 2: Фронтенд (`frontend/`, Vite+React+TS+shadcn/ui, страницы по §3/§9/§10;
-  + `/admin/new-type` — форма создания типа; время форматировать в MSK; Vite-proxy `/api`)
+  + `/admin/new-type` — форма создания типа; время форматировать в MSK; Vite-proxy `/api`;
+  мок разработки — стаб контракта `contract/mock-server` (2.1b), не Prism — он без состояния)
 - Шаг 3: Бэкенд (`backend/`, Node+Express+TS+zod+SQLite, по §9/§10; пересечения
-  интервалов в транзакции; `express.static(frontend/dist)` + SPA-fallback на `PORT`)
-- Шаг 4: e2e (`e2e/` Playwright) + CI (`e2e.yml`) + Conventional Commits + release-please
+  интервалов в транзакции; единый JSON-хендлер ошибок `/api/*` (E18–E19);
+  `express.static(frontend/dist)` + SPA-fallback на `PORT`; здесь — проверка
+  «отдельно запущенного бэка» (3.5))
+- Шаг 4: e2e (`e2e/` Playwright; время — env `NOW` или динамический расчёт в MSK)
+  + CI (`e2e.yml`) + Conventional Commits + release-please
 - Шаг 5: Docker (multi-stage, PORT, единое приложение) + деплой (Render/Railway) + публичная ссылка
 
-### Стек проекта (утверждён ревью 2026-09-01, см. `docs/project-understanding.md` §5/§11)
-- Фронт: TypeScript + Vite + React + shadcn/ui (+ TanStack Query, опц.); Prism mock для разработки.
+### Стек проекта (финализирован 2026-09-01: ревью + аудит, `docs/architecture-audit.md`; см. `docs/project-understanding.md` §5/§11)
+- Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта
+  (Prism — smoke по схеме и proxy-валидация).
 - Контракт: TypeSpec → OpenAPI (единый источник правды); префикс `/api`.
 - Бэк: Node + Express + TypeScript + zod; хранение SQLite (better-sqlite3) + seed при старте.
 - e2e: Playwright (`e2e/`); релизы: Conventional Commits + release-please-action v4.
@@ -102,3 +119,5 @@
 - Структура: монорепо `contract/ + frontend/ + backend/ + e2e/`, корневой NPM workspaces.
 - Окружение: WSL2, `node` на PATH нет, npm — Windows-обёртка; **все dev-команды через
   контейнер `node:24`** (решение §11 7); Docker 29.x доступен нативно.
+- Отклонено (финально): Fastify (взяли Express), Mantine (взяли shadcn/ui),
+  TanStack Query (тонкий fetch-клиент); Prism как мок этапа 2 (взяли стаб контракта).
