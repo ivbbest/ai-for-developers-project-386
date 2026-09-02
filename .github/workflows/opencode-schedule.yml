@@ -10,8 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: write
-      pull-requests: write
+      contents: read
       issues: write
     steps:
       - uses: actions/checkout@v6
@@ -19,7 +18,7 @@ jobs:
           persist-credentials: false
 
       - name: Run opencode scheduled task
-        uses: anomalyco/opencode/github@latest
+        uses: anomalyco/opencode/github@803d9eb7ad5f4dfd832d7506a7cad83ded52253e # v1.4.9
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:

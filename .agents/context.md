@@ -153,6 +153,17 @@
   этапа 1: корневой package.json workspaces — в шаг 1.3; 3.5 — зависима от мержа
   этапа 2; @example 404/409 — шаг 1.5; better-sqlite3-проверка — шаг 1.2;
   пересечение пакетов — в Git-workflow. | ветка docs/plan-fixes
+- 2026-09-02 | Аудитные документы (architecture-audit, retrospective, work-plan-audit,
+  status-audit) перенесены из docs/ в локальный архив .agents/archive/ (gitignore),
+  из репозитория удалены, содержимое доступно в git-истории; ссылки на них из
+  публичных доков пока битые — решение за владельцем | b518b5b
+- 2026-09-02 | Закрыты замечания трёх проходов перепроверки (ветка docs/review-fixes):
+  ссылки на архивированные аудиты помечены «архив: .agents/archive/» во всех публичных
+  доках; AGENTS.md — таблица (retrospective убран, добавлены specs/TEMPLATE и строка
+  opencode*.yml); .gitignore — backend/data/*.db (PII); workflows: review — только PR
+  владельца, schedule — минимальные права (contents: read + issues: write), экшен
+  запиннен на SHA v1.4.9; план — 2.1b все 5 ручек, 2.2/3.5 VITE_API_TARGET, 3.1 сервис
+  now()+NOW, 4.1 браузеры Playwright; три review-findings-дока перенесены в архив | ветка docs/review-fixes
 
 ## Карта памяти (.agents)
 
