@@ -165,6 +165,9 @@
   запиннен на SHA v1.4.9; план — 2.1b все 5 ручек, 2.2/3.5 VITE_API_TARGET, 3.1 сервис
   now()+NOW, 4.1 браузеры Playwright; три review-findings-дока перенесены в архив | ветка docs/review-fixes
 
+- 2026-09-02 | Раунд 7 ревью PR #10 (Approved + should-fix): порядок таймера shutdown, CHECK-ограничения
+  схемы (end>start, E12 в БД), типизированный InvalidDateError, тесты straddle 09:00/18:00 и високосных
+  дат; Intl-vs-константа оставлена осознанно (тест-сверка задокументирована) | 8ebee40
 - 2026-09-02 | Раунд 6 ревью PR #10: два полных prepared-стейтмента вместо конкатенации
   ON CONFLICT, clearTimeout на чистом закрытии, допуск часов ±3с | 34707cf
 - 2026-09-02 | Раунд 5 ревью PR #10: ON CONFLICT(id) DO NOTHING для seed (ловит ровно коллизию PK),
