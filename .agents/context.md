@@ -153,6 +153,10 @@
   этапа 1: корневой package.json workspaces — в шаг 1.3; 3.5 — зависима от мержа
   этапа 2; @example 404/409 — шаг 1.5; better-sqlite3-проверка — шаг 1.2;
   пересечение пакетов — в Git-workflow. | ветка docs/plan-fixes
+- 2026-09-02 | Аудитные документы (architecture-audit, retrospective, work-plan-audit,
+  status-audit) перенесены из docs/ в локальный архив .agents/archive/ (gitignore),
+  из репозитория удалены, содержимое доступно в git-истории; ссылки на них из
+  публичных доков пока битые — решение за владельцем | b518b5b
 
 ## Карта памяти (.agents)
 
