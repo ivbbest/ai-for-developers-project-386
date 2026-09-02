@@ -12,7 +12,14 @@ PORT="${PRISM_PORT:-4010}"
 # префикс — часть контракта, проверяется отдельно по openapi.yaml.
 BASE="http://127.0.0.1:${PORT}"
 BODY=$(mktemp)
-trap 'rm -f "$BODY"' EXIT
+PRISM_PID=""
+# единый trap: любой выход чистит и тело ответа, и процесс Prism (перетирание
+# trap'а двумя регистрациями допускало сироту-Prism при ошибке между шагами)
+cleanup() {
+  [ -n "$PRISM_PID" ] && kill "$PRISM_PID" 2>/dev/null
+  rm -f "$BODY"
+}
+trap cleanup EXIT
 FAILS=0
 
 check() {
@@ -47,7 +54,6 @@ npx --no-install tsp compile . --warn-as-error >/dev/null || {
 
 npx --no-install prism mock dist/openapi.yaml --host 127.0.0.1 --port "$PORT" >/tmp/prism-smoke.log 2>&1 &
 PRISM_PID=$!
-trap 'rm -f "$BODY"; kill $PRISM_PID 2>/dev/null' EXIT
 
 ready=0
 for _ in $(seq 1 60); do
@@ -113,9 +119,6 @@ check "POST /event-types duration=13 → 400 (E12, multipleOf)" 400 -H 'Content-
 check "POST /event-types id вне паттерна → 400 (C5)" 400 -H 'Content-Type: application/json' -d "$BAD_TYPE_ID" "$BASE/event-types"
 check "POST /event-types Prefer code=409" 409 -H 'Prefer: code=409' -H 'Content-Type: application/json' -d "$TYPE" "$BASE/event-types"
 check_body "409 типа — код duplicate_id" '"duplicate_id"'
-
-kill $PRISM_PID 2>/dev/null
-trap 'rm -f "$BODY"' EXIT
 
 if [ "$FAILS" = 0 ]; then
   echo "SMOKE OK: все проверки пройдены"
