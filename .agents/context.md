@@ -170,6 +170,8 @@
   и m3 (exec-бит dev.sh через update-index); m2 уже был исправлен в head; M2/M3/m1/m4–m6 разобраны
   без изменений (причины в комментарии к PR) | ветка feat/api-contract c95b5cd..d945881
 - 2026-09-02 | PR #7: contract-sync упал в контейнере («Not a git repository» — git run-шагов не видит репозиторий checkout'а); проверка переписана на cp+diff без git, зелёный/красный подтверждены локально; по ревью-боту: trap в smoke консолидирован, json-schema запинен exact | ветка feat/api-contract ca3b8bd..eadf42f
+- 2026-09-02 | Раунд 6 ревью PR #11: alive-ref для рефетча из 409-ветки (единая гарантия
+  против setState после unmount) | 042d4fc
 - 2026-09-02 | Раунд 5 ревью PR #11: guard ?end= зеркалит ?start= (ISO-регексп + Date.parse) —
   невозможная дата не доезжает до Intl; typecheck/lint/build зелёные | fd9627b
 - 2026-09-02 | Раунд 4 ревью PR #11: ?end= из слота в confirm (без клиентской арифметики),
