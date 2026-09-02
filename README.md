@@ -52,8 +52,17 @@ npm install
 
 Юнит-тесты бэкенда (`npm test -w backend`) — после этапа 3.
 
-**Прод-режим одним контейнером** — появится после этапа Docker
-(`Dockerfile`, `PORT` из env, бэкенд раздаёт и API, и сборку фронта).
+**Прод-режим одним портом** (без Docker):
+
+```bash
+./scripts/dev.sh sh -c 'cd frontend && npm run build'   # сборка в frontend/dist
+./scripts/dev.sh sh -c 'cd backend && npm run build'    # компиляция в backend/dist
+PORT=3001 ./scripts/dev.sh node backend/dist/server.js  # :3001 — и UI, и API
+```
+
+Бэкенд сам раздаёт `frontend/dist` + SPA-fallback на не-`/api`-маршруты;
+каталог сборки ищется по `STATIC_DIR` (Docker-переопределение) или рядом с
+собой. Одноконтейнерная упаковка — этап Docker.
 
 ## Как это работает
 

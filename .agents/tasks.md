@@ -141,11 +141,14 @@
 - [x] перепроверка ветки + 7 раундов ревью PR #10 (канонизация ISO, N+1, shutdown,
       CHECK-ограничения, InvalidDateError, boundary-тесты — 28 зелёные) — 611244b..8ebee40
 
-`feat/backend-api` (на паузе до мержа backend-db):
-- [ ] 3.3 POST /api/bookings (валидация zod, серверный end, транзакция, 409)
-- [ ] 3.4 POST /event-types + GET /bookings + глобальный JSON-хендлер ошибок (E18–E20),
-      сверка с контрактом через prism proxy
-- [ ] 3.5 раздача фронта + SPA-fallback + dev-связка с реальным бэком (VITE_API_TARGET)
+`feat/backend-api` (ветка готова, ждёт пуш/PR):
+- [x] 3.3 POST /api/bookings (zod .strict, серверный end, транзакция, 409) + слоты-роут
+      и единый JSON-хендлер — 35680b1
+- [x] 3.4 POST /event-types (409 duplicate_id через changes==0) + GET /bookings (E16) +
+      сверка ответов через prism proxy (`npm run contract:check -w backend`) — de3282e
+- [x] 3.5 раздача сборки + SPA-fallback (E19), прод-режим одним портом и dev-связка
+      с реальным бэком проверены живыми прогонами — 7dbd219; ревью-фиксы (E3-порядок,
+      зона start, Violation-гейт) — 3a63abd; в контракт добавлен код server_error (500)
 
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта

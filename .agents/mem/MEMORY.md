@@ -37,6 +37,7 @@
 - 2026-09-02 | project | Шаг 0.2 закрыт (ветка `docs/mcp-claim-check`): официальный MCP есть у обеих площадок — Render `render-oss/render-mcp-server`, Railway в CLI (`railway mcp`); §6/§8/§9 исправлены; деплой этапа 5 — по-прежнему CLI/UI | 614d83e
 - 2026-09-02 | project | **Этап 2 (фронт) влит в main (PR #11)**: экраны по референсам §3, стаб mock-server (41 проверок), клиент+proxy (`VITE_API_TARGET`), README «Запуск»; 7 раундов ревью отработаны | work-plan этап 2
 - 2026-09-02 | project | Этап 3a готов: ветка `feat/backend-db` (3.1+3.2, 28 тестов) ждёт мержа PR #10; до него 3.3–3.5 (`feat/backend-api`) на паузе | work-plan 3.1/3.2
+- 2026-09-02 | project | **Этап 3b готов, ветка `feat/backend-api` ждёт пуш/PR**: весь API + раздача фронта одним портом, 60 тестов, prism-proxy-сверка; третий пробел контракта закрыт кодом `server_error` (500, синхронизирован со спекой) | work-plan 3.3–3.5
 
 ## reference
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8
