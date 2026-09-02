@@ -10,7 +10,9 @@ export type Db = Database.Database;
 // ':memory:' — для юнит-тестов.
 export function defaultDbPath(): string {
   // fileURLToPath, а не URL.pathname: pathname даёт /E:/… и %20-спейсы на Windows
-  return process.env.DATABASE_PATH ?? fileURLToPath(new URL('../../data/app.db', import.meta.url));
+  // `||`, а не `??`: dev-обёртка прокидывает переменную пустой строкой,
+  // путь не должен превращаться в ''
+  return process.env.DATABASE_PATH || fileURLToPath(new URL('../../data/app.db', import.meta.url));
 }
 
 export function openDb(path: string = defaultDbPath()): Db {
