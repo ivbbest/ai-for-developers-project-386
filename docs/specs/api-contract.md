@@ -151,7 +151,8 @@ slot_out_of_window→400, payload_too_large→413, duplicate_id→409.
 - Прод: тот же Express раздаёт `frontend/dist` + SPA-fallback на одну порту `PORT`
   (см. project-understanding §11 решение 9).
 - Хранение: SQLite (`better-sqlite3`), канонический файл `backend/data/app.db`
-  (gitignore-паттерн `backend/data/*.db`); эфемерность диска
+  (gitignore — вся папка `backend/data/`, т.к. WAL добавляет `*.db-wal`/`*.db-shm`);
+  эфемерность диска
   Render принята осознанно — seed при старте (project-understanding §11 решение 10).
 - Порт не хардкодится: `PORT` из env; при `EADDRINUSE` — человекочитаемая ошибка
   «порт X занят, укажи свободный (PORT=…)» и ненулевой exit-code (в dev это частая
