@@ -106,14 +106,15 @@ model BookingCreate {
 }
 
 // validation→400, not_found→404, slot_conflict→409, slot_out_of_window→400,
-// payload_too_large→413, duplicate_id→409 (C7)
+// payload_too_large→413, duplicate_id→409, server_error→500 (C7)
 alias ErrorCode =
   | "validation"
   | "not_found"
   | "slot_conflict"
   | "slot_out_of_window"
   | "payload_too_large"
-  | "duplicate_id";
+  | "duplicate_id"
+  | "server_error";
 
 @error
 @doc("Единая модель ошибок: все ответы /api/* (4xx/5xx) — только она (C7, E18–E19); message — человекочитаемый, RU")
