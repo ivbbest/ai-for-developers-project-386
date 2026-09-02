@@ -170,6 +170,11 @@
   и m3 (exec-бит dev.sh через update-index); m2 уже был исправлен в head; M2/M3/m1/m4–m6 разобраны
   без изменений (причины в комментарии к PR) | ветка feat/api-contract c95b5cd..d945881
 - 2026-09-02 | PR #7: contract-sync упал в контейнере («Not a git repository» — git run-шагов не видит репозиторий checkout'а); проверка переписана на cp+diff без git, зелёный/красный подтверждены локально; по ревью-боту: trap в smoke консолидирован, json-schema запинен exact | ветка feat/api-contract ca3b8bd..eadf42f
+- 2026-09-02 | Раунд по PR #11: CI contract-sync падал — `npm run compile -w contract` матчит и
+  вложенный mock-server (нет скрипта compile); все вызовы на точное `@cal-com/contract` (4c37837).
+  Ревью-бот #11: исправлены гейт загрузки типа, строгий ISO-парсинг ?start=, unmount-guard,
+  maxLength email, общий InfoBox, catch-all 404 (3410e21); 4 пункта отбиты с причинами |
+  ветка feat/frontend
 - 2026-09-02 | Этап 2 (фронт) готов в ветке feat/frontend: каркас Vite+React+TS+shadcn (7 роутов),
   стаб contract/mock-server (in-memory, 5 ручек, смоук 41 проверка), типизированный клиент +
   Vite-proxy на env-таргете, экраны сверены с референсами §3, README «Запуск»; ревью-субагент:
