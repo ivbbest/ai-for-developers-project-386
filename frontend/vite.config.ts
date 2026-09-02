@@ -11,4 +11,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      // Таргет через env (2.2): dev — стаб контракта :4020; переключение на
+      // реальный бэк (3.5) — одна строка VITE_API_TARGET, без правки этого файла.
+      '/api': {
+        target: process.env.VITE_API_TARGET ?? 'http://localhost:4020',
+        changeOrigin: true,
+      },
+    },
+  },
 });
