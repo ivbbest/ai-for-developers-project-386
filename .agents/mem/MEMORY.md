@@ -35,6 +35,7 @@
 - 2026-08-30 | project | Решение: лайт-SDD; каркас (docs/specs/ + шаблон) — с первой dev-задачей курса, не раньше | план 2026-08-30
 - 2026-09-02 | project | **Этап 1 (контракт) готов, ветка `feat/api-contract` ждёт мержа**: TypeSpec 1.15 → `contract/dist/openapi.yaml` (коммитится), Prism-smoke 29 проверок (`npm run smoke -w contract`); в C7 добавлен код `duplicate_id` (409 «id занят», E13); E8 закрыт `seal-object-schemas`; `durationMinutes` — `@multipleOf(5)` | issue #6
 - 2026-09-02 | project | Шаг 0.2 закрыт (ветка `docs/mcp-claim-check`): официальный MCP есть у обеих площадок — Render `render-oss/render-mcp-server`, Railway в CLI (`railway mcp`); §6/§8/§9 исправлены; деплой этапа 5 — по-прежнему CLI/UI | 614d83e
+- 2026-09-02 | project | Этап 3a готов: ветка `feat/backend-db` (3.1+3.2) — хранение, seed, сетка слотов, 24 теста зелёные; ждёт пуш/PR/мержа, до него 3.3–3.5 (`feat/backend-api`) на паузе | work-plan 3.1/3.2
 
 ## reference
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8

@@ -120,6 +120,30 @@
   + CI (`e2e.yml`) + Conventional Commits + release-please
 - Шаг 5: Docker (multi-stage, PORT, единое приложение) + деплой (Render/Railway) + публичная ссылка
 
+### Шаг 2 — Фронтенд — ветка `feat/frontend` (после мержа этапа 1)
+
+- [ ] 2.1 каркас Vite+React+TS+shadcn (dev-сервер отдаёт роуты)
+- [ ] 2.1b стаб контракта `contract/mock-server` (in-memory, 5 ручек, 409 по пересечению, MOCK_PORT=4020)
+- [ ] 2.2 API-клиент по контракту + Vite-proxy `/api` (таргет — env `VITE_API_TARGET`)
+- [ ] 2.3 экраны: /, /book, /book/:typeId, confirm (409+рефреш), success, /admin, /admin/new-type
+- [ ] 2.4 build зелёный, сверка с §3, README «Запуск»
+
+### Шаг 3 — Бэкенд — ветки `feat/backend-db` → `feat/backend-api`
+
+`feat/backend-db` (готов, ждёт пуш/PR):
+- [x] 3.1 каркас Express+TS+zod, константы TZ/часов/окна, `now()` (env `NOW`, инъекция),
+      схема+репозитории, идемпотентный seed, GET каталога — 6745038
+- [x] 3.2 сервис сетки слотов (09:00 MSK шаг=duration, end≤18:00, прошедшие вне,
+      booked по пересечению со всеми бронями, окно сегодня..+13 MSK) — dcdc080
+- [x] перепроверка ветки: npm ci → typecheck/build/test (24 зелёные), ревью
+      свежим взглядом, фиксы (канонизация ISO-меток в хранении — major) — 611244b
+
+`feat/backend-api` (на паузе до мержа backend-db):
+- [ ] 3.3 POST /api/bookings (валидация zod, серверный end, транзакция, 409)
+- [ ] 3.4 POST /event-types + GET /bookings + глобальный JSON-хендлер ошибок (E18–E20),
+      сверка с контрактом через prism proxy
+- [ ] 3.5 раздача фронта + SPA-fallback + dev-связка с реальным бэком (VITE_API_TARGET)
+
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта
   (Prism — smoke по схеме и proxy-валидация).
