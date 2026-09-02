@@ -13,7 +13,7 @@
   зависимости; независимые — параллельные ветки. Детали и ветки этапов —
   `docs/work-plan.md` «Git-workflow».
 - **Тесты обязательны** слоем на этап (`docs/work-plan.md` «Тесты»); задача =
-  поведение + тест + коммит (`docs/retrospective.md` §4).
+  поведение + тест + коммит (`retrospective.md` (архив: `.agents/archive/`) §4).
 - **Публичная гигиена**: в коде/коммитах/PR/README и docs приложения — без
   ИИ-формулировок и ссылок на `AGENTS.md`/`.agents` (исключение — planning-доки курса).
 - **Статусы:** `[ ]` todo · `[~]` in_progress · `[x]` done (с датой/SHA, где есть).
@@ -69,7 +69,7 @@
 - [x] Опечатки/статусы в docs и памяти синхронизированы (docs/, AGENTS.md, .agents/*)
 - [x] **Коммит** обновлённых `docs/`, `AGENTS.md`, `.agents/` — ветка `docs/review-finalization`,
       цепочка атомарных коммитов (от 7587641); PR #2 влит в main (92ff6f3)
-- [x] **Аудит второго прохода** (N1–N9) зафиксирован: `docs/architecture-audit.md`
+- [x] **Аудит второго прохода** (N1–N9) зафиксирован: `architecture-audit.md` (архив: `.agents/archive/`)
       (ветка `docs/audit`, dbaad61); верификация по исходникам: N7 — ложная тревога
       (`--warn-as-error` есть у `tsp compile`), N1 — уточнён (Prism `Prefer: code=`
       для 404/409; stateful-сценарий — нет), N4 — фикс через прозу спеки + `@doc`
@@ -79,8 +79,8 @@
       понимание (§4/§5/§8/§9/§10/§11, решения 15–16), путеводитель (C7, E1–E20)
 - [x] **Стек финализирован 2026-09-01** (решения владельца по аудиту: Q1 — стаб,
       Q2 — расширение `Error`): см. секцию «Стек проекта» ниже и §5/§11 понимания
-- [x] **Перепроверка 2026-09-02**: аудиты `docs/architecture-audit.md` §9 (N10–N14),
-      `docs/work-plan-audit.md` (F1–F7) и `docs/status-audit.md` (готовность);
+- [x] **Перепроверка 2026-09-02**: аудиты `architecture-audit.md` (архив: `.agents/archive/`) §9 (N10–N14),
+      `work-plan-audit.md` (архив: `.agents/archive/`) (F1–F7) и `status-audit.md` (архив: `.agents/archive/`) (готовность);
       cross-ссылки и команды очистки веток в аудитах исправлены при верификации;
       правки F1.1–F7.1 / A6–A8 внесены в план и этот реестр (ветка `docs/plan-fixes`)
 
@@ -117,7 +117,7 @@
   + CI (`e2e.yml`) + Conventional Commits + release-please
 - Шаг 5: Docker (multi-stage, PORT, единое приложение) + деплой (Render/Railway) + публичная ссылка
 
-### Стек проекта (финализирован 2026-09-01: ревью + аудит, `docs/architecture-audit.md`; см. `docs/project-understanding.md` §5/§11)
+### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта
   (Prism — smoke по схеме и proxy-валидация).
 - Контракт: TypeSpec → OpenAPI (единый источник правды); префикс `/api`.
