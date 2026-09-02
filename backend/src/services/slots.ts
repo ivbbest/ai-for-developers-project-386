@@ -25,7 +25,11 @@ export function mskDay(moment: Date): string {
     day: '2-digit',
   }).formatToParts(moment);
   const get = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value;
-  return `${get('year')}-${get('month')}-${get('day')}`;
+  const [y, m, d] = [get('year'), get('month'), get('day')];
+  if (!y || !m || !d) {
+    throw new Error(`Intl не вернул части даты для ${SERVICE_TZ}: ${moment.toISOString()}`);
+  }
+  return `${y}-${m}-${d}`;
 }
 
 function addDays(isoDay: string, days: number): string {
@@ -72,6 +76,10 @@ export function buildSlots(db: Db, type: EventType, dateStr: string, nowFn: NowF
   const dayStartUtc = Date.parse(`${dateStr}T00:00:00Z`) - MSK_OFFSET_MINUTES * 60_000;
   const at = (minuteOfDay: number) => new Date(dayStartUtc + minuteOfDay * 60_000);
 
+  // Брони дня — одним запросом, статус слота считается в памяти:
+  // по запросу на слот (36 на день) превращалось в N+1
+  const busy = findOverlaps(db, at(WORK_START_MINUTE).toISOString(), at(WORK_END_MINUTE).toISOString());
+
   const slots: Slot[] = [];
   for (let m = WORK_START_MINUTE; m + type.durationMinutes <= WORK_END_MINUTE; m += type.durationMinutes) {
     const start = at(m);
@@ -79,7 +87,7 @@ export function buildSlots(db: Db, type: EventType, dateStr: string, nowFn: NowF
     if (start.getTime() < nowMs) continue;
     const startIso = start.toISOString();
     const endIso = end.toISOString();
-    const status = findOverlaps(db, startIso, endIso).length > 0 ? 'booked' : 'available';
+    const status = busy.some((b) => startIso < b.end && endIso > b.start) ? 'booked' : 'available';
     slots.push({ start: startIso, end: endIso, status });
   }
   return slots;

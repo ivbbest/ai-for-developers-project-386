@@ -74,6 +74,8 @@ export function createBookingIfFree(
   input: BookingCreate,
   nowFn: NowFn = now,
 ): { ok: true; booking: Booking } | { ok: false; conflicts: Booking[] } {
+  // toIsoUtc идемпотентен, повторная нормализация внутри findOverlaps/insertBooking
+  // безопасна: они вызываются и напрямую, их границы должны держать канон сами
   const canonical: BookingCreate = { ...input, start: toIsoUtc(input.start), end: toIsoUtc(input.end) };
   const tx = db.transaction((): { ok: true; booking: Booking } | { ok: false; conflicts: Booking[] } => {
     const conflicts = findOverlaps(db, canonical.start, canonical.end);

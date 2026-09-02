@@ -27,10 +27,5 @@ export interface Booking {
   createdAt: string; // ISO UTC
 }
 
-export interface BookingInput {
-  eventTypeId: string;
-  start: string;
-  name: string;
-  email: string;
-  notes?: string;
-}
+// Вход для создания брони — repositories/bookings.ts (BookingCreate):
+// id/createdAt серверные, end вычисляется из длительности типа.
