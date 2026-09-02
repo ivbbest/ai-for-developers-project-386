@@ -20,7 +20,7 @@ export function ConfirmPage() {
   const start = rawStart && ISO_START.test(rawStart) && !Number.isNaN(Date.parse(rawStart)) ? rawStart : null;
   // end берём из слота (он знает свой end); вычисление по длительности — только
   // фолбэк для ссылки без ?end=, чтобы не разъезжалось с серверным округлением
-  const endParam = rawEnd && ISO_START.test(rawEnd) ? rawEnd : null;
+  const endParam = rawEnd && ISO_START.test(rawEnd) && !Number.isNaN(Date.parse(rawEnd)) ? rawEnd : null;
   const navigate = useNavigate();
   const dayParam = start ? mskDay(start) : null;
 
