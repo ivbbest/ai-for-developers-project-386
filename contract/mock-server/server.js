@@ -130,5 +130,7 @@ app.post('/api/event-types', (req, res) => {
 // Неизвестный /api/* — тот же формат Error (E19), не html-заглушка Express
 app.use('/api', (_req, res) => error(res, 404, 'not_found', 'Маршрут не найден'));
 
-const port = Number(process.env.MOCK_PORT ?? 4020);
+// `|| 4020`, а не `?? 4020`: compose.dev прокидывает MOCK_PORT пустой строкой,
+// Number('') дал бы порт 0 (рандомный) вместо дефолта
+const port = Number(process.env.MOCK_PORT) || 4020;
 app.listen(port, () => console.log(`contract stub on :${port} (MOCK_PORT)`));

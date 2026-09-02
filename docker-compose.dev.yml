@@ -11,6 +11,15 @@ services:
     environment:
       # не мешать в неинтерактивном прогоне (npm update-notifier, color)
       - NO_COLOR=1
+      # хостовые env доходят до контейнера только так: `PORT=3001 ./scripts/dev.sh …`
+      # работает без правки этого файла; пустое значение сохраняет ветку
+      # «PORT не задан» у сервера (решение §11.13 — падать с внятной ошибкой)
+      - PORT=${PORT:-}
+      - MOCK_PORT=${MOCK_PORT:-}
+      - PRISM_PORT=${PRISM_PORT:-}
+      - VITE_API_TARGET=${VITE_API_TARGET:-}
+      - DATABASE_PATH=${DATABASE_PATH:-}
+      - NOW=${NOW:-}
     stdin_open: true
     tty: true
     command: bash
