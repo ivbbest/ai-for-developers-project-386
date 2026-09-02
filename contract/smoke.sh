@@ -57,9 +57,11 @@ PRISM_PID=$!
 
 ready=0
 for _ in $(seq 1 60); do
-  # порт мог занять чужой процесс: ждём именно живой Prism
+  # порт мог занять чужой процесс: ждём живой Prism И его ответ по нашей схеме
+  # (200 + JSON-массив), иначе проверки уйдут в чужой сервис
   if ! kill -0 "$PRISM_PID" 2>/dev/null; then break; fi
-  if curl -s -o /dev/null "$BASE/event-types"; then ready=1; break; fi
+  if [ "$(curl -s -o "$BODY" -w '%{http_code}' "$BASE/event-types")" = "200" ] \
+     && grep -q '^\[' "$BODY"; then ready=1; break; fi
   sleep 0.5
 done
 if [ "$ready" != 1 ]; then
