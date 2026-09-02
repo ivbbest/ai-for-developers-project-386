@@ -27,13 +27,19 @@ server.on('error', (err: NodeJS.ErrnoException) => {
 });
 
 // SIGTERM/SIGINT (Docker/Render stopping a container): дождаться текущих
-// запросов, закрыть БД (WAL чекпоинтится на close) и выйти детерминированно
+// запросов, закрыть БД (WAL чекпоинтится на close) и выйти детерминированно.
+// Повторный сигнал игнорируется (double-fire гонки нет), зависший keep-alive
+// коннект не держит процесс — через 5 с жёсткий выход.
+let shuttingDown = false;
 function shutdown(signal: string): void {
+  if (shuttingDown) return;
+  shuttingDown = true;
   console.log(`received ${signal}, shutting down`);
   server.close(() => {
     db.close();
     process.exit(0);
   });
+  setTimeout(() => process.exit(1), 5_000).unref();
 }
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));

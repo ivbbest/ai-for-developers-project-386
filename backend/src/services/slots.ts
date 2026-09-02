@@ -58,10 +58,12 @@ export function assertValidDate(dateStr: string): void {
 // исключены; занятые — со статусом booked (пересечение с ЛЮБОЙ бронью).
 export function buildSlots(db: Db, type: EventType, dateStr: string, nowFn: NowFn = now): Slot[] {
   assertValidDate(dateStr);
-  // Сервис может получить любую строку из БД; шаг <= 0 зациклил бы сетку.
-  // Валидация форматов на границе HTTP — задача маршрутов (3.4).
-  if (type.durationMinutes <= 0 || !Number.isInteger(type.durationMinutes)) {
-    throw new ValidationError(`durationMinutes должен быть положительным целым: ${type.durationMinutes}`);
+  // Сервис может получить любую строку из БД; шаг вне E12 (5–540, кратно 5)
+  // дал бы некорректную сетку или вечный цикл. Валидация форматов на границе
+  // HTTP — задача маршрутов (3.4), здесь — инвариант расчёта.
+  const d = type.durationMinutes;
+  if (!Number.isInteger(d) || d < 5 || d > 540 || d % 5 !== 0) {
+    throw new ValidationError(`durationMinutes должен быть целым 5–540 и кратным 5: ${d}`);
   }
   // Один момент «сейчас» на запрос: окно и отсечка прошедших сверяются
   // с одними и теми же часами.
