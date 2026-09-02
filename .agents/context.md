@@ -143,6 +143,16 @@
   решения 15–16), reading-guide.md (C7, E1–E20, 16 решений), tasks.md. Стек финально:
   Express (не Fastify), shadcn/ui (не Mantine), TanStack Query не берём, мок этапа 2 —
   стаб контракта. Решения владельца: Q1 — стаб, Q2 — расширенная модель ошибок. | —
+- 2026-09-02 | Аудиты дня зафиксированы в docs: `architecture-audit.md` §9 (N10–N14,
+  план A6–A10), `work-plan-audit.md` (F1–F7, план правок), `status-audit.md`
+  (готовность к этапу 1). Перепроверка: находки F1–F7 подтверждены; в самих
+  аудитах исправлены неточные ссылки (docker.txt:12,14; project-understanding
+  :147/220-221; tip-ы веток вместо merge-коммитов) и опасная команда
+  `git branch -d docs/audit-fixes` (tip не предок main, патч дублирует c1a81ce —
+  нужен -D). Правки F1.1–F7.1 / A6–A8 внесены в work-plan.md и tasks.md до старта
+  этапа 1: корневой package.json workspaces — в шаг 1.3; 3.5 — зависима от мержа
+  этапа 2; @example 404/409 — шаг 1.5; better-sqlite3-проверка — шаг 1.2;
+  пересечение пакетов — в Git-workflow. | ветка docs/plan-fixes
 
 ## Карта памяти (.agents)
 
