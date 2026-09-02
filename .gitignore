@@ -9,5 +9,9 @@ venv/
 __pycache__/
 *.pyc
 node_modules/
+
+# SQLite data (PII — имена/email гостей)
+backend/data/*.db
+
 # Архив одноразовых аудитов (локально, в git не попадает)
 .agents/archive/
