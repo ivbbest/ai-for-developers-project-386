@@ -8,9 +8,23 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace
+    # host-сеть: два прогона обёртки (стаб + vite) видят друг друга через
+    # localhost (vite-прокси → :4020), а браузер хоста — dev-сервер на :5173.
+    # Без неё `docker compose run` поднимает изолированные сети — связки нет.
+    # WSL2 проксирует localhost из VM на Windows-браузер штатно.
+    network_mode: host
     environment:
       # не мешать в неинтерактивном прогоне (npm update-notifier, color)
       - NO_COLOR=1
+      # хостовые env доходят до контейнера только так: `PORT=3001 ./scripts/dev.sh …`
+      # работает без правки этого файла; пустое значение сохраняет ветку
+      # «PORT не задан» у сервера (решение §11.13 — падать с внятной ошибкой)
+      - PORT=${PORT:-}
+      - MOCK_PORT=${MOCK_PORT:-}
+      - PRISM_PORT=${PRISM_PORT:-}
+      - VITE_API_TARGET=${VITE_API_TARGET:-}
+      - DATABASE_PATH=${DATABASE_PATH:-}
+      - NOW=${NOW:-}
     stdin_open: true
     tty: true
     command: bash

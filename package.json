@@ -5,6 +5,7 @@
   "description": "Call booking calendar: contract + frontend + backend (monorepo, NPM workspaces)",
   "workspaces": [
     "contract",
+    "contract/mock-server",
     "frontend",
     "backend"
   ]
