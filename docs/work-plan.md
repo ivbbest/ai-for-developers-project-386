@@ -65,7 +65,7 @@
   (пин `@typespec/compiler|http|rest|openapi3`),
   `tspconfig.yaml` (emitter openapi3, `output-file-type: yaml`, вывод `dist/`), `main.tsp`
   (`@server /api`). Грабля: эмиттер по умолчанию пишет JSON — yaml надо задать явно.
-  Критерий: пустой compile проходит в контейнере; `npm run compile -w contract`
+  Критерий: пустой compile проходит в контейнере; `npm run compile -w @cal-com/contract`
   работает из корня (иначе команды `-w` из «Локального запуска» не исполнимы —
   аудит N11/F2).
 - [x] **1.4** `models.tsp`: EventType, Slot(+status), Booking, BookingCreate, Error —
@@ -228,7 +228,7 @@ ss -ltnp | grep -E ':(3001|5173|4010|4020)' || echo "порты свободны
 # задать свободные (пример): обёртка прокидывает эти переменные из хоста
 PORT=3101 ./scripts/dev.sh npm run dev -w backend
 VITE_API_TARGET=http://localhost:3101 ./scripts/dev.sh npm run dev -w frontend -- --port 5273
-PRISM_PORT=4110 ./scripts/dev.sh npm run smoke -w contract
+PRISM_PORT=4110 ./scripts/dev.sh npm run smoke -w @cal-com/contract
 MOCK_PORT=4120 ./scripts/dev.sh npm run start -w @cal-com/mock-server
 ```
 
@@ -238,7 +238,7 @@ MOCK_PORT=4120 ./scripts/dev.sh npm run start -w @cal-com/mock-server
 ```bash
 # 0) Один раз: dev-обёртка node:24 (шаг 1.2) — все команды ниже внутри неё
 # 1) Контракт → OpenAPI (этап 1)
-npm run compile -w contract                # → contract/dist/openapi.yaml
+npm run compile -w @cal-com/contract                # → contract/dist/openapi.yaml
 
 # 2) Фронт без бэка — на стабе контракта (этап 2; Prism без состояния — N1)
 npm run start -w @cal-com/mock-server         # стаб :4020, сценарий: бронь → «Занято»

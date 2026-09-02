@@ -45,8 +45,8 @@ npm install
 **Сборка контракта и проверки:**
 
 ```bash
-./scripts/dev.sh npm run compile -w contract             # → contract/dist/openapi.yaml
-./scripts/dev.sh npm run smoke -w contract               # Prism-smoke по контракту
+./scripts/dev.sh npm run compile -w @cal-com/contract             # → contract/dist/openapi.yaml
+./scripts/dev.sh npm run smoke -w @cal-com/contract               # Prism-smoke по контракту
 ./scripts/dev.sh npm run smoke -w @cal-com/mock-server   # сценарий на стабе
 ```
 

@@ -3,7 +3,7 @@
 # + curl по всем 5 ручкам и кодам 200/201/400/404/409. 404/409 — через заголовок
 # Prefer: code=NNN: Prism без состояния и отдаёт заготовленный пример по схеме
 # (stateful-сценарий «бронь → Занято» — стаб этапа 2, 2.1b).
-# Прогон: ./scripts/dev.sh npm run smoke -w contract
+# Прогон: ./scripts/dev.sh npm run smoke -w @cal-com/contract
 set -u
 cd "$(dirname "$0")"
 
