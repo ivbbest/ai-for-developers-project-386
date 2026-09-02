@@ -48,8 +48,9 @@ npm install
 ./scripts/dev.sh npm run compile -w contract             # → contract/dist/openapi.yaml
 ./scripts/dev.sh npm run smoke -w contract               # Prism-smoke по контракту
 ./scripts/dev.sh npm run smoke -w @cal-com/mock-server   # сценарий на стабе
-./scripts/dev.sh npm test -w backend                     # юнит-тесты хранилища и слотов
 ```
+
+Юнит-тесты бэкенда (`npm test -w backend`) — после этапа 3.
 
 **Прод-режим одним контейнером** — появится после этапа Docker
 (`Dockerfile`, `PORT` из env, бэкенд раздаёт и API, и сборку фронта).
