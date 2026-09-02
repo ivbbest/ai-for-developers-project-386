@@ -1,6 +1,6 @@
 // Эндпоинты — строго по таблице «Эндпоинты» docs/specs/api-contract.md.
-// Для 404/409 — явные @opExample тела Error: smoke 1.6 через `Prefer: code=NNN`
-// становится детерминированным (аудит N14/F4). Примеры только для тела ответа:
+// Для 404/409 — явные @opExample тела Error: smoke (contract/smoke.sh) через
+// `Prefer: code=NNN` становится детерминированным. Примеры только для тела ответа:
 // темпоральные литералы (plainDate/utcDateTime) компилятор 1.15 в значениях не
 // принимает, а запросов с датами в примерах это не касается.
 import "@typespec/http";
@@ -93,7 +93,7 @@ interface GuestApi {
   ): CreatedBookingResponse | BadRequestError | NotFoundError | SlotConflictError | PayloadTooLargeError;
 }
 
-@doc("Владелец: фиксированный профиль { name, email }, без регистрации и авторизации (по курсу); ручки молча принадлежат владельцу (Owner — не модель, N4)")
+@doc("Владелец: фиксированный профиль { name, email }, без регистрации и авторизации (по курсу); ручки молча принадлежат владельцу (Owner — документационная сущность, не модель)")
 interface OwnerApi {
   @get
   @route("/bookings")

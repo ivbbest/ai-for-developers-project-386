@@ -1,6 +1,6 @@
 // Модели контракта — строго по docs/specs/api-contract.md («Доменные сущности»).
 // Owner — не модель, а @doc на админ-интерфейсе (routes.tsp): unreferenced-модель
-// не попадает в сгенерированный openapi.yaml (аудит N4).
+// не попадает в сгенерированный openapi.yaml (эмиттер выводит только referenced-схемы).
 import "@typespec/http";
 import "@typespec/json-schema";
 
