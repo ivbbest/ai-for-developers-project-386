@@ -65,7 +65,7 @@
   (пин `@typespec/compiler|http|rest|openapi3`),
   `tspconfig.yaml` (emitter openapi3, `output-file-type: yaml`, вывод `dist/`), `main.tsp`
   (`@server /api`). Грабля: эмиттер по умолчанию пишет JSON — yaml надо задать явно.
-  Критерий: пустой compile проходит в контейнере; `npm run compile -w contract`
+  Критерий: пустой compile проходит в контейнере; `npm run compile -w @cal-com/contract`
   работает из корня (иначе команды `-w` из «Локального запуска» не исполнимы —
   аудит N11/F2).
 - [x] **1.4** `models.tsp`: EventType, Slot(+status), Booking, BookingCreate, Error —
@@ -91,9 +91,9 @@
 Детали: `docs/project-understanding.md` §9 «Шаг 2», §3 (экраны); правила отображения —
 спека «Правила реализации» (MSK-форматирование, слоты по `status`, 409 → ошибка + рефреш).
 
-- [ ] **2.1** Каркас `frontend/` (Vite+React+TS) в контейнере; shadcn-компоненты по списку §9 п. 2.
+- [x] **2.1** Каркас `frontend/` (Vite+React+TS) в контейнере; shadcn-компоненты по списку §9 п. 2.
   Критерий: dev-сервер отдаёт пустые роуты.
-- [ ] **2.1b** Стаб контракта `contract/mock-server/` (Express in-memory, ~50 строк):
+- [x] **2.1b** Стаб контракта `contract/mock-server/` (Express in-memory, ~50 строк):
   каталог типов, сетка слотов со `status`, пересечения → 409, seed `meet-15`/`meet-30`,
   порт `MOCK_PORT` (дефолт 4020). Prism не хранит состояние — «забронировал → слот
   стал „Занято“» на нём не показать (N1). Стаб — dev-инструмент этапа 2, вторичный
@@ -103,17 +103,17 @@
   повтор/пересечение → 409; админ-ручки тоже отдаются: `GET /api/bookings` (список
   броней для `/admin`), `POST /api/event-types` → новый тип виден в `GET
   /api/event-types` (для `/admin/new-type`, сценарий 2.3) — все 5 ручек контракта.
-- [ ] **2.2** API-клиент по `openapi.yaml` (генерация или тонкий fetch) + стаб
+- [x] **2.2** API-клиент по `openapi.yaml` (генерация или тонкий fetch) + стаб
   контракта (2.1b); Vite-proxy `/api` → стаб (Prism — только smoke по схеме, 1.6).
   Таргет proxy — через env `VITE_API_TARGET` (дефолт `http://localhost:4020`),
   не хардкод: переключение на реальный бэк (3.5) — одна строка env, без правки
   `vite.config` из чужой ветки.
   Критерий: каталог типов рендерится со стаба.
-- [ ] **2.3** Экраны: `/`, `/book`, `/book/:typeId` (календарь+статусы),
+- [x] **2.3** Экраны: `/`, `/book`, `/book/:typeId` (календарь+статусы),
   `/book/:typeId/confirm` (409-обработка), `/success`, `/admin`, `/admin/new-type`.
   Критерий: ручной проход сценария против стаба от начала до конца
   (бронь → «Занято» → повтор → 409 → новый тип в каталоге).
-- [ ] **2.4** Сборка без ошибок; сверка с §3 по скриншотам; секция «Запуск» в README
+- [x] **2.4** Сборка без ошибок; сверка с §3 по скриншотам; секция «Запуск» в README
   (см. «Локальный запуск» этого файла). Критерий: `npm run build` зелёный, скриншот-чек пройден.
 
 ## Этап 3 — Бэкенд — ветки `feat/backend-db` → `feat/backend-api` (после мержа этапа 1)
@@ -225,8 +225,11 @@ injectable `now()` в сервисе слотов; e2e (реальный бра
 ```bash
 # что занято (Linux/WSL):
 ss -ltnp | grep -E ':(3001|5173|4010|4020)' || echo "порты свободны"
-# задать свободные (пример):
-BACKEND_PORT=3101 FRONT_PORT=5273 PRISM_PORT=4110 MOCK_PORT=4120 npm run dev -w backend
+# задать свободные (пример): обёртка прокидывает эти переменные из хоста
+PORT=3101 ./scripts/dev.sh npm run dev -w backend
+VITE_API_TARGET=http://localhost:3101 ./scripts/dev.sh npm run dev -w frontend -- --port 5273
+PRISM_PORT=4110 ./scripts/dev.sh npm run smoke -w @cal-com/contract
+MOCK_PORT=4120 ./scripts/dev.sh npm run start -w @cal-com/mock-server
 ```
 
 Приложение читает `PORT` из env и на `EADDRINUSE` падает с внятным сообщением
@@ -235,16 +238,16 @@ BACKEND_PORT=3101 FRONT_PORT=5273 PRISM_PORT=4110 MOCK_PORT=4120 npm run dev -w 
 ```bash
 # 0) Один раз: dev-обёртка node:24 (шаг 1.2) — все команды ниже внутри неё
 # 1) Контракт → OpenAPI (этап 1)
-npm run compile -w contract                # → contract/dist/openapi.yaml
+npm run compile -w @cal-com/contract                # → contract/dist/openapi.yaml
 
 # 2) Фронт без бэка — на стабе контракта (этап 2; Prism без состояния — N1)
-npm run mock -w contract                   # стаб :4020, сценарий: бронь → «Занято»
+npm run start -w @cal-com/mock-server         # стаб :4020, сценарий: бронь → «Занято»
 npx @stoplight/prism-cli contract/dist/openapi.yaml   # :4010 — smoke по схеме (1.6)
-npm run dev -w frontend                    # Vite-proxy /api → :4020
+npm run dev -w frontend                       # Vite-proxy /api → :4020
 
 # 3) Фронт + реальный бэк (этап 3)
-npm run dev -w backend                     # :3001, seed типов при старте
-npm run dev -w frontend                    # :5173 → открыть, забронировать слот
+PORT=3001 npm run dev -w backend            # бэк требует PORT из env (§11.13), seed при старте
+VITE_API_TARGET=http://localhost:3001 npm run dev -w frontend   # :5173 → открыть, забронировать слот
 
 # 4) Прод-режим одним процессом (этап 5)
 docker build -t cal-com . && docker run -p 3000:3000 -e PORT=3000 cal-com

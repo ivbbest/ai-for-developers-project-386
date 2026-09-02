@@ -198,6 +198,31 @@
   и m3 (exec-бит dev.sh через update-index); m2 уже был исправлен в head; M2/M3/m1/m4–m6 разобраны
   без изменений (причины в комментарии к PR) | ветка feat/api-contract c95b5cd..d945881
 - 2026-09-02 | PR #7: contract-sync упал в контейнере («Not a git repository» — git run-шагов не видит репозиторий checkout'а); проверка переписана на cp+diff без git, зелёный/красный подтверждены локально; по ревью-боту: trap в smoke консолидирован, json-schema запинен exact | ветка feat/api-contract ca3b8bd..eadf42f
+- 2026-09-02 | Раунд 6 ревью PR #11: alive-ref для рефетча из 409-ветки (единая гарантия
+  против setState после unmount) | 042d4fc
+- 2026-09-02 | Раунд 5 ревью PR #11: guard ?end= зеркалит ?start= (ISO-регексп + Date.parse) —
+  невозможная дата не доезжает до Intl; typecheck/lint/build зелёные | fd9627b
+- 2026-09-02 | Раунд 4 ревью PR #11: ?end= из слота в confirm (без клиентской арифметики),
+  useCallback для loadSlots (disable-комментарий снят), break-words, честный nullable state,
+  aria-hidden="true"; staleness today после полуночи принят осознанно (сервер отвечает 400) |
+  aba1d09
+- 2026-09-02 | Раунд 3 ревью PR #11: cancelled-флаг в загрузке типа, email в disabled submit,
+  ApiError.name, удалена мёртвая пара formatDuration/WORK_HOURS_LABEL, комментарии к намерениям
+  (TZ-представление дня, catch рефреша); пометка PII-риска в теле PR; shadcn-набор оставлен по
+  списку плана (§9 п. 2), бандл не вырос | 29b75f2
+- 2026-09-02 | Раунд 2 ревью PR #11: cancelled-флаги в book/admin, maxLength=40 на id (a2d2bc3);
+  остальные 8 пунктов — наблюдения/отбиты с причинами (комментарий в PR) | ветка feat/frontend
+- 2026-09-02 | Раунд по PR #11: CI contract-sync падал — `npm run compile -w contract` матчит и
+  вложенный mock-server (нет скрипта compile); все вызовы на точное `@cal-com/contract` (4c37837).
+  Ревью-бот #11: исправлены гейт загрузки типа, строгий ISO-парсинг ?start=, unmount-guard,
+  maxLength email, общий InfoBox, catch-all 404 (3410e21); 4 пункта отбиты с причинами |
+  ветка feat/frontend
+- 2026-09-02 | Этап 2 (фронт) готов в ветке feat/frontend: каркас Vite+React+TS+shadcn (7 роутов),
+  стаб contract/mock-server (in-memory, 5 ручек, смоук 41 проверка), типизированный клиент +
+  Vite-proxy на env-таргете, экраны сверены с референсами §3, README «Запуск»; ревью-субагент:
+  7 major разобраны (JSON-400 Error, валидация сетки на стабе, guard ?start=, MSK-подпись даты,
+  гонка запросов слотов, возврат на тот же день, host-сеть обёртки) + strict/пины/чистка ассетов;
+  build/lint/typecheck зелёные, смоук контракта не задет | ветка feat/frontend 4151ac5..46c905c
 - 2026-09-02 | Этап 1 закрыт полностью (шаг 1.7 по согласию владельца): workflow
   `contract-sync.yml` (npm ci → compile → diff артефакта, контейнер node:24); критерий
   «красный на рассинхроне» проверен локальной симуляцией (зелёный/красный) | ветка feat/api-contract a25051f

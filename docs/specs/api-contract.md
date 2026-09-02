@@ -2,7 +2,7 @@
 
 Статус: готово — этап 1 реализован: TypeSpec в `contract/`, артефакт
 `contract/dist/openapi.yaml` (коммитится), smoke по Prism зелёный
-(`./scripts/dev.sh npm run smoke -w contract`)
+(`./scripts/dev.sh npm run smoke -w @cal-com/contract`)
 Связанный issue: https://github.com/ivbbest/ai-for-developers-project-386/issues/6
 Дата: 2026-09-01
 

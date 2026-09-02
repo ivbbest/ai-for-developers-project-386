@@ -38,11 +38,11 @@ jobs:
       - name: Save the committed artifact for comparison
         run: cp contract/dist/openapi.yaml /tmp/committed-openapi.yaml
       - name: Compile TypeSpec (warn-as-error)
-        run: npm run compile -w contract
+        run: npm run compile -w @cal-com/contract
       - name: Fail if the committed openapi.yaml is stale
         run: |
           if ! diff -u /tmp/committed-openapi.yaml contract/dist/openapi.yaml; then
-            echo "::error::contract/dist/openapi.yaml расходится с contract/*.tsp — перегенерируйте: ./scripts/dev.sh npm run compile -w contract"
+            echo "::error::contract/dist/openapi.yaml расходится с contract/*.tsp — перегенерируйте: ./scripts/dev.sh npm run compile -w @cal-com/contract"
             exit 1
           fi
           echo "contract/dist/openapi.yaml matches contract/*.tsp"

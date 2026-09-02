@@ -120,23 +120,26 @@
   + CI (`e2e.yml`) + Conventional Commits + release-please
 - Шаг 5: Docker (multi-stage, PORT, единое приложение) + деплой (Render/Railway) + публичная ссылка
 
-### Шаг 2 — Фронтенд — ветка `feat/frontend` (после мержа этапа 1)
+### Шаг 2 — Фронтенд — ветка `feat/frontend` — влита в main (PR #11)
 
-- [ ] 2.1 каркас Vite+React+TS+shadcn (dev-сервер отдаёт роуты)
-- [ ] 2.1b стаб контракта `contract/mock-server` (in-memory, 5 ручек, 409 по пересечению, MOCK_PORT=4020)
-- [ ] 2.2 API-клиент по контракту + Vite-proxy `/api` (таргет — env `VITE_API_TARGET`)
-- [ ] 2.3 экраны: /, /book, /book/:typeId, confirm (409+рефреш), success, /admin, /admin/new-type
-- [ ] 2.4 build зелёный, сверка с §3, README «Запуск»
+- [x] 2.1 каркас Vite+React+TS+shadcn (dev-сервер отдаёт роуты) — 4151ac5
+- [x] 2.1b стаб контракта `contract/mock-server` (in-memory, 5 ручек, 409 по пересечению,
+      MOCK_PORT=4020) — 653ef88; валидации по ревью и смоук из 41 проверки — 6c61684
+- [x] 2.2 API-клиент по контракту + Vite-proxy `/api` (таргет — env `VITE_API_TARGET`) — 76f001e
+- [x] 2.3 экраны: /, /book, /book/:typeId, confirm (409+рефреш), success, /admin, /admin/new-type
+      — 204dd12; сверка с референсами §3 — 5a925b3; фиксы ревью — 7e20c7a; клик-проход — e2e этапа 4
+- [x] 2.4 build зелёный, сверка с §3, README «Запуск» — f8f8624; host-сеть обёртки — da8b7ec;
+      strict + гигиена зависимостей — adde6a6, 02c2608
 
 ### Шаг 3 — Бэкенд — ветки `feat/backend-db` → `feat/backend-api`
 
-`feat/backend-db` (готов, ждёт пуш/PR):
+`feat/backend-db` (PR #10, ждёт мержа):
 - [x] 3.1 каркас Express+TS+zod, константы TZ/часов/окна, `now()` (env `NOW`, инъекция),
       схема+репозитории, идемпотентный seed, GET каталога — 6745038
 - [x] 3.2 сервис сетки слотов (09:00 MSK шаг=duration, end≤18:00, прошедшие вне,
       booked по пересечению со всеми бронями, окно сегодня..+13 MSK) — dcdc080
-- [x] перепроверка ветки: npm ci → typecheck/build/test (24 зелёные), ревью
-      свежим взглядом, фиксы (канонизация ISO-меток в хранении — major) — 611244b
+- [x] перепроверка ветки + 7 раундов ревью PR #10 (канонизация ISO, N+1, shutdown,
+      CHECK-ограничения, InvalidDateError, boundary-тесты — 28 зелёные) — 611244b..8ebee40
 
 `feat/backend-api` (на паузе до мержа backend-db):
 - [ ] 3.3 POST /api/bookings (валидация zod, серверный end, транзакция, 409)
