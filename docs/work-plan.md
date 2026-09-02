@@ -225,8 +225,11 @@ injectable `now()` в сервисе слотов; e2e (реальный бра
 ```bash
 # что занято (Linux/WSL):
 ss -ltnp | grep -E ':(3001|5173|4010|4020)' || echo "порты свободны"
-# задать свободные (пример):
-BACKEND_PORT=3101 FRONT_PORT=5273 PRISM_PORT=4110 MOCK_PORT=4120 npm run dev -w backend
+# задать свободные (пример): обёртка прокидывает эти переменные из хоста
+PORT=3101 ./scripts/dev.sh npm run dev -w backend
+VITE_API_TARGET=http://localhost:3101 ./scripts/dev.sh npm run dev -w frontend -- --port 5273
+PRISM_PORT=4110 ./scripts/dev.sh npm run smoke -w contract
+MOCK_PORT=4120 ./scripts/dev.sh npm run start -w @cal-com/mock-server
 ```
 
 Приложение читает `PORT` из env и на `EADDRINUSE` падает с внятным сообщением
@@ -238,13 +241,13 @@ BACKEND_PORT=3101 FRONT_PORT=5273 PRISM_PORT=4110 MOCK_PORT=4120 npm run dev -w 
 npm run compile -w contract                # → contract/dist/openapi.yaml
 
 # 2) Фронт без бэка — на стабе контракта (этап 2; Prism без состояния — N1)
-npm run mock -w contract                   # стаб :4020, сценарий: бронь → «Занято»
+npm run start -w @cal-com/mock-server         # стаб :4020, сценарий: бронь → «Занято»
 npx @stoplight/prism-cli contract/dist/openapi.yaml   # :4010 — smoke по схеме (1.6)
-npm run dev -w frontend                    # Vite-proxy /api → :4020
+npm run dev -w frontend                       # Vite-proxy /api → :4020
 
 # 3) Фронт + реальный бэк (этап 3)
-npm run dev -w backend                     # :3001, seed типов при старте
-npm run dev -w frontend                    # :5173 → открыть, забронировать слот
+PORT=3001 npm run dev -w backend            # бэк требует PORT из env (§11.13), seed при старте
+VITE_API_TARGET=http://localhost:3001 npm run dev -w frontend   # :5173 → открыть, забронировать слот
 
 # 4) Прод-режим одним процессом (этап 5)
 docker build -t cal-com . && docker run -p 3000:3000 -e PORT=3000 cal-com
