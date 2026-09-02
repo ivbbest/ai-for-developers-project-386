@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   created_at     TEXT NOT NULL
 );
 
--- пересечения ищутся по интервалу: индекс по start сужает скан
-CREATE INDEX IF NOT EXISTS bookings_start_idx ON bookings(start);
+-- пересечения ищутся по двум границам интервала: составной индекс даёт
+-- index-only скан по предикату start < @end AND end > @start
+CREATE INDEX IF NOT EXISTS bookings_start_end_idx ON bookings(start, end);
 `;

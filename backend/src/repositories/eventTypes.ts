@@ -33,11 +33,13 @@ export function getEventType(db: Db, id: string): EventType | undefined {
 
 // ignore=true — идемпотентный seed; false — обычный вставочный путь (POST /event-types, 3.4).
 // Возвращает число вставленных строк: 0 при ignore-дубле нужен маршруту для 409 duplicate_id.
+// ON CONFLICT(id) DO NOTHING вместо INSERT OR IGNORE: игнорируется ровно коллизия PK,
+// любые другие нарушения (NOT NULL и т. п.) остаются ошибками.
 export function insertEventType(db: Db, et: EventType, opts: { ignore?: boolean } = {}): number {
-  const verb = opts.ignore ? 'INSERT OR IGNORE' : 'INSERT';
+  const onConflict = opts.ignore ? ' ON CONFLICT(id) DO NOTHING' : '';
   const info = db.prepare(
-    `${verb} INTO event_types (id, title, description, duration_minutes)
-     VALUES (@id, @title, @description, @durationMinutes)`,
+    `INSERT INTO event_types (id, title, description, duration_minutes)
+     VALUES (@id, @title, @description, @durationMinutes)${onConflict}`,
   ).run({
     id: et.id,
     title: et.title,

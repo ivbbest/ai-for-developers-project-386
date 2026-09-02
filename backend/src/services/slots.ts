@@ -83,6 +83,8 @@ export function buildSlots(db: Db, type: EventType, dateStr: string, nowFn: NowF
   const busy = findOverlaps(db, at(WORK_START_MINUTE).toISOString(), at(WORK_END_MINUTE).toISOString());
 
   const slots: Slot[] = [];
+  // Инвариант: шаг цикла положителен и целой кратен 5 — его гарантирует
+  // проверка durationMinutes выше (5–540, кратно 5). Без неё m += 0 зациклил бы сетку.
   for (let m = WORK_START_MINUTE; m + type.durationMinutes <= WORK_END_MINUTE; m += type.durationMinutes) {
     const start = at(m);
     const end = at(m + type.durationMinutes);
