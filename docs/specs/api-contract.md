@@ -70,7 +70,7 @@
 |---|---|---|---|---|
 | GET | `/api/event-types` | Каталог типов (id, title, description, durationMinutes) | 200 `EventType[]` | — |
 | GET | `/api/event-types/{id}/slots?date=YYYY-MM-DD` | Сетка слотов дня со статусами (`date` — обязательный `@query`) | 200 `Slot[]` | 404 тип не найден; 400 дата кривая или параметр не передан (E20); `slot_out_of_window` — дата вне C4 (200 c `[]` **не** отдаём, чтобы фронт различал «нет слотов» и «вне окна») |
-| POST | `/api/bookings` | Создать бронь | 201 `Booking` | 400 валидация; 404 типа нет; `slot_conflict` → 409 |
+| POST | `/api/bookings` | Создать бронь | 201 `Booking` | 400 валидация; 404 типа нет; `slot_conflict` → 409; 413 `payload_too_large` (E18) |
 
 Тело `POST /api/bookings` (`BookingCreate`):
 ```
@@ -83,7 +83,7 @@
 | Метод | Путь | Назначение | Успех | Ошибки |
 |---|---|---|---|---|
 | GET | `/api/bookings` | Предстоящие встречи всех типов (`start ≥ now`), сортировка по `start` | 200 `Booking[]` | — |
-| POST | `/api/event-types` | Создать тип | 201 `EventType` | 400 валидация; 409 `duplicate_id` (id занят) |
+| POST | `/api/event-types` | Создать тип | 201 `EventType` | 400 валидация; 409 `duplicate_id` (id занят); 413 `payload_too_large` (E18) |
 
 ## Правила занятости (ядро)
 
@@ -184,6 +184,9 @@ slot_out_of_window→400, payload_too_large→413, duplicate_id→409.
 - План работ по этапам — `docs/work-plan.md`; разбор превентивных проверок —
   `retrospective.md` (архив: `.agents/archive/`, локально).
 - Анализ входных материалов — `docs/project-understanding.md`.
-- `durationMinutes` «кратно 5»: keyword `multipleOf` в OpenAPI есть, но в
-  TypeSpec 1.15 нет декоратора, чтобы его выставить (проверено на эмиттере) —
-  в контракте ограничение задокументировано (`@doc`), проверяет бэкенд (E12).
+- `durationMinutes` «кратно 5»: в контракте — `@multipleOf(5)` через
+  `@typespec/json-schema` (optional peer эмиттера openapi3); в сгенерированном
+  yaml — `multipleOf: 5`, проверяется и smoke, и бэкендом (E12).
+- E8 (неизвестные поля тела → 400): сгенерированные схемы закрыты
+  (`seal-object-schemas` → `additionalProperties: { not: {} }`) — строгость
+  зафиксирована в контракте, а не только в zod-валидации бэкенда.

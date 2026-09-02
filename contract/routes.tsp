@@ -34,6 +34,12 @@ model DuplicateIdError extends Response<409> {
   body: Error;
 }
 
+@doc("413 payload_too_large: тело запроса больше лимита (E9, E18)")
+model PayloadTooLargeError extends Response<413> {
+  @body
+  body: Error;
+}
+
 @doc("201 Created: созданная бронь")
 model CreatedBookingResponse extends Response<201> {
   @body
@@ -84,7 +90,7 @@ interface GuestApi {
   )
   createBooking(
     @body body: BookingCreate,
-  ): CreatedBookingResponse | BadRequestError | NotFoundError | SlotConflictError;
+  ): CreatedBookingResponse | BadRequestError | NotFoundError | SlotConflictError | PayloadTooLargeError;
 }
 
 @doc("Владелец: фиксированный профиль { name, email }, без регистрации и авторизации (по курсу); ручки молча принадлежат владельцу (Owner — не модель, N4)")
@@ -105,7 +111,7 @@ interface OwnerApi {
   )
   createEventType(
     @body body: EventType,
-  ): CreatedEventTypeResponse | BadRequestError | DuplicateIdError;
+  ): CreatedEventTypeResponse | BadRequestError | DuplicateIdError | PayloadTooLargeError;
 }
 
 }

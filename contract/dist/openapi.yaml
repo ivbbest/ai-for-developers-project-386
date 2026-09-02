@@ -47,6 +47,12 @@ paths:
                   value:
                     code: slot_conflict
                     message: 'Слот уже занят: 09:15–09:30 МСК пересекается с существующей бронью'
+        '413':
+          description: '413 payload_too_large: тело запроса больше лимита (E9, E18)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       requestBody:
         required: true
         content:
@@ -109,6 +115,12 @@ paths:
                   value:
                     code: duplicate_id
                     message: 'id уже занят: meet-15'
+        '413':
+          description: '413 payload_too_large: тело запроса больше лимита (E9, E18)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       requestBody:
         required: true
         content:
