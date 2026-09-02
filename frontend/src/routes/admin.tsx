@@ -12,10 +12,14 @@ export function AdminPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     api
       .listBookings()
-      .then(setBookings)
-      .catch(() => setError('Не удалось загрузить встречи'));
+      .then((list) => !cancelled && setBookings(list))
+      .catch(() => !cancelled && setError('Не удалось загрузить встречи'));
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

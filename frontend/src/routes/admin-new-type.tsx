@@ -56,7 +56,7 @@ export function AdminNewTypePage() {
         <form className="grid gap-4" onSubmit={submit}>
           <label className="grid gap-1 text-sm">
             Id
-            <Input value={id} onChange={(e) => setId(e.target.value)} pattern="[a-z0-9-]{1,40}" required />
+            <Input value={id} onChange={(e) => setId(e.target.value)} pattern="[a-z0-9-]{1,40}" maxLength={40} required />
             {id && !idOk && <span className="text-xs text-destructive">только a-z, 0-9, дефис; до 40 символов</span>}
           </label>
           <label className="grid gap-1 text-sm">

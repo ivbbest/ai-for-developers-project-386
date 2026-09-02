@@ -12,10 +12,14 @@ export function BookTypePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     api
       .listEventTypes()
-      .then(setTypes)
-      .catch(() => setError('Не удалось загрузить каталог'));
+      .then((list) => !cancelled && setTypes(list))
+      .catch(() => !cancelled && setError('Не удалось загрузить каталог'));
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
