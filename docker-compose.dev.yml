@@ -8,6 +8,11 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace
+    # host-сеть: два прогона обёртки (стаб + vite) видят друг друга через
+    # localhost (vite-прокси → :4020), а браузер хоста — dev-сервер на :5173.
+    # Без неё `docker compose run` поднимает изолированные сети — связки нет.
+    # WSL2 проксирует localhost из VM на Windows-браузер штатно.
+    network_mode: host
     environment:
       # не мешать в неинтерактивном прогоне (npm update-notifier, color)
       - NO_COLOR=1
