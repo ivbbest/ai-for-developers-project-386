@@ -245,6 +245,8 @@ Frontend и Backend реализуются раздельно, связь — �
    Все ответы — в `docs/specs/api-contract.md`.
 3. **Инициализация TypeSpec** (все команды — в контейнере `node:24`, §5):
    - каркас вручную или `tsp init` (шаблон REST API): `main.tsp`, `package.json`.
+   - корневой `package.json` монорепо: NPM workspaces `contract`, `frontend`,
+     `backend` (`e2e/` — отдельно, решения 3–4; шаг 1.3 плана, аудит F2).
    - Пакеты: `@typespec/compiler`, `@typespec/http`, `@typespec/openapi3`, `@typespec/rest`
      — **версии пинить**; эмиттер openapi3 по умолчанию пишет JSON — в `tspconfig.yaml`
      задать `output-file-type: yaml` (иначе `dist/openapi.yaml` не появится).
