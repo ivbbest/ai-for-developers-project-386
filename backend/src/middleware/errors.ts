@@ -20,7 +20,13 @@ export function apiErrorHandler(err: unknown, _req: Request, res: Response, next
     return send(res, err.status, err.code, err.message);
   }
   if (err instanceof ZodError) {
-    // E8/E9/E10/E11/E12: первое сообщение zod — человекочитаемое, RU-подсказка сверху
+    // E8: unknown fields приходят особым issue (keys, path=[]) — свой RU-текст,
+    // иначе поле «» с англоязычным сообщением вместо человекочитаемого (C7)
+    const unknown = err.issues.filter((i) => i.code === 'unrecognized_keys');
+    if (unknown.length > 0) {
+      const keys = [...new Set(unknown.flatMap((i) => (i as { keys?: string[] }).keys ?? []))];
+      return send(res, 400, 'validation', `Неизвестные поля: ${keys.join(', ')}`);
+    }
     const first = err.issues[0];
     const field = first?.path.join('.') ?? 'тело';
     return send(res, 400, 'validation', `Поле «${field}»: ${first?.message ?? 'некорректно'}`);

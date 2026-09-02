@@ -66,9 +66,16 @@ check "POST /event-types → 201" 201 -H "$J" -d '{"id":"check-60","title":"Ча
 check "POST /event-types дубль → 409" 409 -H "$J" -d '{"id":"check-60","title":"Ещё","durationMinutes":60}' "$BASE/event-types"
 check "GET  /bookings после брони" 200 "$BASE/bookings"
 
-if [ "$FAILS" = 0 ]; then
-  echo "CONTRACT CHECK OK: ответы бэкенда проходят валидацию openapi.yaml через prism proxy"
-else
+if [ "$FAILS" != 0 ]; then
   echo "CONTRACT CHECK FAILED: $FAILS провалов"
   exit 1
 fi
+# prism proxy не превращает нарушения схемы ОТВЕТОВ в 5xx — он только пишет
+# Violation в свой лог (проверено canary-ответом). Без этого сверка сводилась
+# к статус-кодам; смотрим лог явно.
+if grep -q "Violation" /tmp/contract-check.prism.log; then
+  echo "CONTRACT CHECK FAILED: prism зафиксировал нарушения схемы ответов:"
+  grep -B2 -A6 "Violation" /tmp/contract-check.prism.log | head -40
+  exit 1
+fi
+echo "CONTRACT CHECK OK: ответы бэкенда проходят валидацию openapi.yaml через prism proxy"

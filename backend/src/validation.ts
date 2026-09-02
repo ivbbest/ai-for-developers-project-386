@@ -10,7 +10,8 @@ const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 export const bookingCreateSchema = z
   .object({
     eventTypeId: z.string('Ожидается строка'),
-    // формат/сетка — после проверки типа (E6: «тип раньше валидации start»)
+    // формат/сетка — после проверки типа (E6: «тип раньше валидации start»),
+    // поэтому здесь только строка; зону и сетку требует validateBookingStart
     start: z.string('Ожидается строка'),
     name: z.string('Ожидается строка').trim().min(1, 'нельзя пусто').max(120, 'максимум 120 символов'),
     email: z

@@ -58,20 +58,28 @@ export function assertValidDate(dateStr: string): void {
 // отличается от оконного — фронт по нему рефрешит сетку), лежит на шаге
 // от 09:00 MSK и заканчивается не позже 18:00.
 export function validateBookingStart(type: EventType, startIso: string, nowFn: NowFn = now): void {
+  const t = nowFn();
+  // без зоны Date.parse трактует строку как локальное время — семантика слотов
+  // поехала бы от часов сервера; контракт обещает utcDateTime
+  if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(startIso)) {
+    throw new ValidationError(`start должен быть с зоной (…Z или ±hh:mm): ${startIso}`);
+  }
   const startMs = Date.parse(startIso);
   if (Number.isNaN(startMs)) {
     throw new ValidationError(`start не парсится как дата: ${startIso}`);
   }
-  const t = nowFn();
+  // E3 раньше E5: «страница висела до полуночи» даёт старт вчера — дата формально
+  // вне окна, но сообщение обязано быть «время слота уже прошло» (фронт по нему
+  // рефрешит сетку, а не подсказывает про дату)
+  if (startMs < t.getTime()) {
+    throw new OutOfWindowError('время слота уже прошло');
+  }
   const mskStartMs = startMs + MSK_OFFSET_MINUTES * 60_000;
   const dayStartMs = Math.floor(mskStartMs / 86_400_000) * 86_400_000;
   const startDay = new Date(dayStartMs).toISOString().slice(0, 10);
   const today = mskDay(t);
   if (startDay < today || startDay > addDays(today, WINDOW_DAYS - 1)) {
     throw new OutOfWindowError(`дата вне окна записи (${WINDOW_DAYS} дней, MSK): ${startDay}`);
-  }
-  if (startMs < t.getTime()) {
-    throw new OutOfWindowError('время слота уже прошло');
   }
   const minuteOfDay = (mskStartMs - dayStartMs) / 60_000;
   if (

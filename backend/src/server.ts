@@ -15,7 +15,7 @@ if (!Number.isInteger(port) || port <= 0 || port > 65535) {
 const staticDir =
   process.env.STATIC_DIR || fileURLToPath(new URL('../../frontend/dist', import.meta.url));
 
-// Раунд 9 PR #10: сбой ФС/прав при открытии БД — внятный выход, а не голый стек.
+// Сбой ФС/прав при открытии БД — внятный выход, а не голый стек.
 function initDb() {
   try {
     const opened = openDb();

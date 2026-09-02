@@ -20,7 +20,6 @@ function makeDb(): Db {
   return db;
 }
 
-const app = createApp(makeDb(), { nowFn: NOW });
 
 function slotDate(offsetDays = 0): string {
   // «завтра» от NOW в MSK
@@ -134,7 +133,7 @@ describe('POST /api/bookings (3.3)', () => {
     expect(again.body.code).toBe('slot_conflict');
   });
 
-  it('E15: параллельные пересекающиеся POST — ровно один 201', async () => {
+  it('E15: три пересекающиеся POST одной очередью — ровно один 201 (исходы, не interleaving)', async () => {
     const results = await Promise.all([
       request(api).post('/api/bookings').send(booking({ eventTypeId: 'meet-30' })), // 06:00–06:30
       request(api).post('/api/bookings').send(booking({ eventTypeId: 'meet-30' })), // тот же интервал
@@ -206,6 +205,30 @@ describe('POST /api/bookings (3.3)', () => {
     const res = await request(api).post('/api/bookings').send(booking({ start: 'вчера' }));
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('validation');
+  });
+
+  it('start без зоны → 400 validation (контракт обещает utcDateTime)', async () => {
+    const res = await request(api).post('/api/bookings').send(booking({ start: '2026-09-10T06:00:00' }));
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/зоной/);
+  });
+
+  it('E8: неизвестные поля — RU-список, не «Поле ""» с англ. текстом', async () => {
+    const res = await request(api).post('/api/bookings').send(booking({ owner: 'x', end: 'y' }));
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Неизвестные поля: owner, end');
+  });
+
+  it('E3 после полуночи: вчерашний старт — «время слота уже прошло», не «вне окна»', async () => {
+    const afterMidnight = createApp(makeDb(), { nowFn: () => new Date('2026-09-10T21:30:00Z') }); // 00:30 MSK 11-го
+    const res = await request(afterMidnight).post('/api/bookings').send({
+      eventTypeId: 'meet-15',
+      start: '2026-09-10T06:00:00.000Z', // 09:00 MSK 10-го — вчера и прошлое
+      name: 'Г', email: 'g@example.com',
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('slot_out_of_window');
+    expect(res.body.message).toBe('время слота уже прошло');
   });
 });
 

@@ -22,7 +22,7 @@ export function eventTypesRouter(db: Db, nowFn: NowFn = now): Router {
     }
     const date = req.query.date;
     if (typeof date !== 'string' || date === '') {
-      throw new HttpError(400, 'validation', 'date обязателен: ?date=YYYY-MM-DD (E20)');
+      throw new HttpError(400, 'validation', 'date обязателен: ?date=YYYY-MM-DD');
     }
     res.json(buildSlots(db, type, date, nowFn));
   });
