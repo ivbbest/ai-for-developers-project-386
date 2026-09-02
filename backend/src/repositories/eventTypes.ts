@@ -35,12 +35,12 @@ export function getEventType(db: Db, id: string): EventType | undefined {
 // Возвращает число вставленных строк: 0 при ignore-дубле нужен маршруту для 409 duplicate_id.
 // ON CONFLICT(id) DO NOTHING вместо INSERT OR IGNORE: игнорируется ровно коллизия PK,
 // любые другие нарушения (NOT NULL и т. п.) остаются ошибками.
+const INSERT_SQL = `INSERT INTO event_types (id, title, description, duration_minutes)
+     VALUES (@id, @title, @description, @durationMinutes)`;
+const INSERT_IGNORE_SQL = `${INSERT_SQL} ON CONFLICT(id) DO NOTHING`;
+
 export function insertEventType(db: Db, et: EventType, opts: { ignore?: boolean } = {}): number {
-  const onConflict = opts.ignore ? ' ON CONFLICT(id) DO NOTHING' : '';
-  const info = db.prepare(
-    `INSERT INTO event_types (id, title, description, duration_minutes)
-     VALUES (@id, @title, @description, @durationMinutes)${onConflict}`,
-  ).run({
+  const info = db.prepare(opts.ignore ? INSERT_IGNORE_SQL : INSERT_SQL).run({
     id: et.id,
     title: et.title,
     description: et.description ?? null,

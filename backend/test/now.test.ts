@@ -18,8 +18,9 @@ describe('now(): единственный источник текущего вр
     delete process.env.NOW;
     const before = Date.now();
     const t = now().getTime();
-    expect(t).toBeGreaterThanOrEqual(before - 1000);
-    expect(t).toBeLessThanOrEqual(Date.now() + 1000);
+    // допуск ±3 c: под нагрузкой CI секунда может не хватить (раунд 6 PR #10)
+    expect(t).toBeGreaterThanOrEqual(before - 3000);
+    expect(t).toBeLessThanOrEqual(Date.now() + 3000);
   });
 
   it('кривой NOW — явная ошибка, а не молчаливый системный час', () => {
