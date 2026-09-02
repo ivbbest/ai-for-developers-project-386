@@ -103,7 +103,8 @@
 - [x] `tsp compile . --warn-as-error` чистый → `contract/dist/openapi.yaml` закоммичен (756a25e)
 - [x] Smoke через Prism (`contract/smoke.sh`, `npm run smoke -w contract`): 29 проверок —
       все ручки/коды, E8/E12/E20; префикс /api по yaml (Prism игнорирует относительный servers.url)
-- [ ] (после явного «да» пользователя) CI-проверка синхронизации openapi.yaml (compile → diff)
+- [x] (согласие владельца 2026-09-02) CI-проверка синхронизации openapi.yaml
+      (compile → diff) — workflow `contract-sync.yml`, зелёный/красный проверены локально
 - [x] `docs/specs/api-contract.md` → статус «готово», критерии отмечены; ритуал закрытия —
       этим обновлением памяти; CI-проверка синхронизации (1.7) — ждёт явного согласия владельца
 

@@ -165,6 +165,9 @@
   запиннен на SHA v1.4.9; план — 2.1b все 5 ручек, 2.2/3.5 VITE_API_TARGET, 3.1 сервис
   now()+NOW, 4.1 браузеры Playwright; три review-findings-дока перенесены в архив | ветка docs/review-fixes
 
+- 2026-09-02 | Этап 1 закрыт полностью (шаг 1.7 по согласию владельца): workflow
+  `contract-sync.yml` (npm ci → compile → diff артефакта, контейнер node:24); критерий
+  «красный на рассинхроне» проверен локальной симуляцией (зелёный/красный) | ветка feat/api-contract a25051f
 - 2026-09-02 | Шаг 0.2: перепроверено утверждение §6 «у Render/Railway официальных MCP
   нет» — неверно: у Render официальный сервер render-oss/render-mcp-server
   (render.com/docs/mcp-server), у Railway MCP встроен в CLI (`railway mcp`, отдельный
