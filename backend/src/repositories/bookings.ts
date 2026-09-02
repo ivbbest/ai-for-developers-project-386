@@ -3,6 +3,14 @@ import type { Db } from '../db/connection.js';
 import type { Booking } from '../types.js';
 import { now, type NowFn } from '../services/now.js';
 
+// Хранилище принимает только канон UTC ISO (вид ...T09:00:00.000Z):
+// TEXT-колонки сравниваются лексикографически, «2026-09-10T09:30:00Z» или
+// «+03:00» рядом с «.000Z» ломает и пересечения (E1), и сортировки.
+// Ненулевые offset/форматы нормализуются здесь, мусор — RangeError.
+export function toIsoUtc(value: string): string {
+  return new Date(value).toISOString();
+}
+
 interface BookingRow {
   id: string;
   event_type_id: string;
@@ -37,7 +45,7 @@ export function findOverlaps(db: Db, start: string, end: string): Booking[] {
       `SELECT id, event_type_id, start, end, name, email, notes, created_at
        FROM bookings WHERE ${OVERLAP_WHERE} ORDER BY start`,
     )
-    .all({ start, end }) as BookingRow[];
+    .all({ start: toIsoUtc(start), end: toIsoUtc(end) }) as BookingRow[];
   return rows.map(toBooking);
 }
 
@@ -48,12 +56,12 @@ export function insertBooking(db: Db, b: Booking): void {
   ).run({
     id: b.id,
     eventTypeId: b.eventTypeId,
-    start: b.start,
-    end: b.end,
+    start: toIsoUtc(b.start),
+    end: toIsoUtc(b.end),
     name: b.name,
     email: b.email,
     notes: b.notes ?? null,
-    createdAt: b.createdAt,
+    createdAt: toIsoUtc(b.createdAt),
   });
 }
 
@@ -66,10 +74,11 @@ export function createBookingIfFree(
   input: BookingCreate,
   nowFn: NowFn = now,
 ): { ok: true; booking: Booking } | { ok: false; conflicts: Booking[] } {
+  const canonical: BookingCreate = { ...input, start: toIsoUtc(input.start), end: toIsoUtc(input.end) };
   const tx = db.transaction((): { ok: true; booking: Booking } | { ok: false; conflicts: Booking[] } => {
-    const conflicts = findOverlaps(db, input.start, input.end);
+    const conflicts = findOverlaps(db, canonical.start, canonical.end);
     if (conflicts.length > 0) return { ok: false, conflicts };
-    const booking: Booking = { ...input, id: randomUUID(), createdAt: nowFn().toISOString() };
+    const booking: Booking = { ...canonical, id: randomUUID(), createdAt: nowFn().toISOString() };
     insertBooking(db, booking);
     return { ok: true, booking };
   });
@@ -82,6 +91,6 @@ export function listUpcoming(db: Db, fromIso: string): Booking[] {
       `SELECT id, event_type_id, start, end, name, email, notes, created_at
        FROM bookings WHERE start >= ? ORDER BY start`,
     )
-    .all(fromIso) as BookingRow[];
+    .all(toIsoUtc(fromIso)) as BookingRow[];
   return rows.map(toBooking);
 }

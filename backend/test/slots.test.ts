@@ -86,6 +86,11 @@ describe('сетка слотов (3.2)', () => {
     expect(isDateInWindow('2026-09-25', late)).toBe(false);
   });
 
+  it('нечисловая/нулевая длительность в строке БД — ValidationError, не вечный цикл', () => {
+    expect(() => buildSlots(db, { id: 'x', title: 'x', durationMinutes: 0 }, '2026-09-10', NOW_MORNING)).toThrow(ValidationError);
+    expect(() => buildSlots(db, { id: 'x', title: 'x', durationMinutes: 7.5 }, '2026-09-10', NOW_MORNING)).toThrow(ValidationError);
+  });
+
   it('кривые даты — ValidationError (E4)', () => {
     expect(() => assertValidDate('2026-02-30')).toThrow(ValidationError); // не календарная
     expect(() => assertValidDate('2026-9-5')).toThrow(ValidationError); // формат

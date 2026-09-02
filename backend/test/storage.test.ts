@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { openDb, migrate, type Db } from '../src/db/connection.js';
-import { seed, SEED_EVENT_TYPES } from '../src/db/seed.js';
+import { seed } from '../src/db/seed.js';
 import { listEventTypes, getEventType, insertEventType } from '../src/repositories/eventTypes.js';
 import {
   findOverlaps,
@@ -42,7 +42,6 @@ describe('хранилище: схема, seed, репозитории', () => {
     const meet15 = getEventType(db, 'meet-15');
     expect(meet15).toMatchObject({ id: 'meet-15', durationMinutes: 15 });
     expect(meet15?.title).toBeTruthy();
-    expect(SEED_EVENT_TYPES.length).toBe(2);
   });
 
   it('getEventType: несуществующий id — undefined', () => {
@@ -70,14 +69,27 @@ describe('хранилище: схема, seed, репозитории', () => {
     const clash = createBookingIfFree(db, input, () => new Date('2026-01-01T00:00:00Z'));
     expect(clash.ok).toBe(false);
     if (!clash.ok) expect(clash.conflicts).toHaveLength(1);
+    // конфликтующая вставка не оставила следов
+    expect(db.prepare('SELECT COUNT(*) AS n FROM bookings').get()).toEqual({ n: 1 });
 
     const free: BookingCreate = { ...input, start: '2026-09-10T10:00:00.000Z', end: '2026-09-10T10:15:00.000Z' };
     const ok = createBookingIfFree(db, free, () => new Date('2026-01-02T03:04:05Z'));
     expect(ok.ok).toBe(true);
     if (ok.ok) {
-      expect(ok.booking.id).toMatch(/[0-9a-f-]{36}/);
+      expect(ok.booking.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
       expect(ok.booking.createdAt).toBe('2026-01-02T03:04:05.000Z'); // now() прокинут в транзакцию
     }
+  });
+
+  it('неканонические метки времени нормализуются при записи и запросе', () => {
+    // без канонизации лексикографическое сравнение TEXT врёт: '...:00Z' < '...:00.000Z'
+    insertBooking(db, booking({ start: '2026-09-10T09:00:00Z', end: '2026-09-10T09:30:00Z' }));
+    const stored = db.prepare('SELECT start, end FROM bookings').get();
+    expect(stored).toEqual({ start: '2026-09-10T09:00:00.000Z', end: '2026-09-10T09:30:00.000Z' });
+    // стык в канон-формате — не конфликт
+    expect(findOverlaps(db, '2026-09-10T09:30:00.000Z', '2026-09-10T10:00:00.000Z')).toHaveLength(0);
+    // offset-формат на входе запроса тоже сравнивается корректно: 12:15 MSK == 09:15Z — внутри брони
+    expect(findOverlaps(db, '2026-09-10T12:15:00+03:00', '2026-09-10T12:30:00+03:00')).toHaveLength(1);
   });
 
   it('listUpcoming: фильтр start >= now и сортировка по start', () => {

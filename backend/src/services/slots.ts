@@ -54,11 +54,19 @@ export function assertValidDate(dateStr: string): void {
 // исключены; занятые — со статусом booked (пересечение с ЛЮБОЙ бронью).
 export function buildSlots(db: Db, type: EventType, dateStr: string, nowFn: NowFn = now): Slot[] {
   assertValidDate(dateStr);
-  if (!isDateInWindow(dateStr, nowFn)) {
+  // Сервис может получить любую строку из БД; шаг <= 0 зациклил бы сетку.
+  // Валидация форматов на границе HTTP — задача маршрутов (3.4).
+  if (type.durationMinutes <= 0 || !Number.isInteger(type.durationMinutes)) {
+    throw new ValidationError(`durationMinutes должен быть положительным целым: ${type.durationMinutes}`);
+  }
+  // Один момент «сейчас» на запрос: окно и отсечка прошедших сверяются
+  // с одними и теми же часами.
+  const t = nowFn();
+  if (!isDateInWindow(dateStr, () => t)) {
     throw new OutOfWindowError(`дата вне окна записи (${WINDOW_DAYS} дней, MSK): ${dateStr}`);
   }
 
-  const nowMs = nowFn().getTime();
+  const nowMs = t.getTime();
   // MSK-минута дня → абсолютный UTC-момент: день начинается в 00:00 MSK,
   // это на MSK_OFFSET_MINUTES раньше, чем 00:00 того же UTC-дня.
   const dayStartUtc = Date.parse(`${dateStr}T00:00:00Z`) - MSK_OFFSET_MINUTES * 60_000;
