@@ -45,6 +45,12 @@ describe('хранилище: схема, seed, репозитории', () => {
     expect(meet15?.title).toBeTruthy();
   });
 
+  it('insertEventType возвращает число вставленных строк (0 — дубл под ignore)', () => {
+    expect(insertEventType(db, { id: 'dup-1', title: 'Д', durationMinutes: 10 })).toBe(1);
+    expect(insertEventType(db, { id: 'dup-1', title: 'Д', durationMinutes: 10 }, { ignore: true })).toBe(0);
+    expect(insertEventType(db, { id: 'meet-15', title: 'seed', durationMinutes: 15 }, { ignore: true })).toBe(0);
+  });
+
   it('getEventType: несуществующий id — undefined', () => {
     expect(getEventType(db, 'нет-такого')).toBeUndefined();
   });

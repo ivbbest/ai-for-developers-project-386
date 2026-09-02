@@ -31,10 +31,11 @@ export function getEventType(db: Db, id: string): EventType | undefined {
   return row ? toEventType(row) : undefined;
 }
 
-// ignore=true — идемпотентный seed; false — обычный вставочный путь (POST /event-types, 3.4)
-export function insertEventType(db: Db, et: EventType, opts: { ignore?: boolean } = {}): void {
+// ignore=true — идемпотентный seed; false — обычный вставочный путь (POST /event-types, 3.4).
+// Возвращает число вставленных строк: 0 при ignore-дубле нужен маршруту для 409 duplicate_id.
+export function insertEventType(db: Db, et: EventType, opts: { ignore?: boolean } = {}): number {
   const verb = opts.ignore ? 'INSERT OR IGNORE' : 'INSERT';
-  db.prepare(
+  const info = db.prepare(
     `${verb} INTO event_types (id, title, description, duration_minutes)
      VALUES (@id, @title, @description, @durationMinutes)`,
   ).run({
@@ -43,4 +44,5 @@ export function insertEventType(db: Db, et: EventType, opts: { ignore?: boolean 
     description: et.description ?? null,
     durationMinutes: et.durationMinutes,
   });
+  return info.changes;
 }

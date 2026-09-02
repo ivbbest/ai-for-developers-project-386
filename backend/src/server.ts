@@ -13,14 +13,27 @@ const db = openDb();
 migrate(db);
 seed(db);
 
-createApp(db)
-  .listen(port, () => {
-    console.log(`cal-com API listening on :${port}`);
-  })
-  .on('error', (err: NodeJS.ErrnoException) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`порт ${port} уже занят — укажите другой PORT`);
-      process.exit(1);
-    }
-    throw err;
+const server = createApp(db).listen(port, () => {
+  console.log(`cal-com API listening on :${port}`);
+});
+
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`порт ${port} уже занят — укажите другой PORT`);
+  } else {
+    console.error(err);
+  }
+  process.exit(1);
+});
+
+// SIGTERM/SIGINT (Docker/Render stopping a container): дождаться текущих
+// запросов, закрыть БД (WAL чекпоинтится на close) и выйти детерминированно
+function shutdown(signal: string): void {
+  console.log(`received ${signal}, shutting down`);
+  server.close(() => {
+    db.close();
+    process.exit(0);
   });
+}
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
