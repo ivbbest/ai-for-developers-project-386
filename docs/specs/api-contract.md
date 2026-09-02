@@ -21,7 +21,7 @@
 | C4 | Окно записи — 14 календарных дней, включая сегодня (сегодня … сегодня+13) | точная трактовка «14 дней с текущей даты»; дата считается в MSK |
 | C5 | Идентификаторы: у EventType — читаемый `id` задаёт владелец (паттерн `^[a-z0-9-]{1,40}$`), у Booking — server-side uuid | формулировка курса: «владелец задает id»; читаемый id стабилен в seed/e2e; броням внешний id не нужен |
 | C6 | `slug` — нет; `DELETE /event-types` — нет; `GET /event-types/{id}` — нет | вне требований курса (YAGNI); каталог отдаёт все поля для карточки |
-| C7 | Ошибки — единая модель `Error { code, message }`; коды: `validation`, `not_found`, `slot_conflict`, `slot_out_of_window`, `payload_too_large`; **все** ответы `/api/*` (4xx/5xx) — только она: дефолтные обработчики Express (413 body-parser, 404 неизвестного `/api/*`-пути, 5xx) оборачиваются единым JSON-хендлером | валидируемый контракт для двух независимых реализаций; иначе на 413/неизвестном пути фронт получает HTML вместо `Error` (N2) |
+| C7 | Ошибки — единая модель `Error { code, message }`; коды: `validation`, `not_found`, `slot_conflict`, `slot_out_of_window`, `payload_too_large`, `duplicate_id`; **все** ответы `/api/*` (4xx/5xx) — только она: дефолтные обработчики Express (413 body-parser, 404 неизвестного `/api/*`-пути, 5xx) оборачиваются единым JSON-хендлером | валидируемый контракт для двух независимых реализаций; иначе на 413/неизвестном пути фронт получает HTML вместо `Error` (N2) |
 
 ## Доменные сущности
 
@@ -83,7 +83,7 @@
 | Метод | Путь | Назначение | Успех | Ошибки |
 |---|---|---|---|---|
 | GET | `/api/bookings` | Предстоящие встречи всех типов (`start ≥ now`), сортировка по `start` | 200 `Booking[]` | — |
-| POST | `/api/event-types` | Создать тип | 201 `EventType` | 400 валидация; 409 id занят |
+| POST | `/api/event-types` | Создать тип | 201 `EventType` | 400 валидация; 409 `duplicate_id` (id занят) |
 
 ## Правила занятости (ядро)
 
@@ -127,11 +127,13 @@
 
 ```
 Error { code: "validation" | "not_found" | "slot_conflict" | "slot_out_of_window"
-                   | "payload_too_large",
+                   | "payload_too_large" | "duplicate_id",
         message: string }   // человекочитаемый, RU
 ```
 Соответствие HTTP: validation→400, not_found→404, slot_conflict→409,
-slot_out_of_window→400, payload_too_large→413. Все ответы `/api/*`
+slot_out_of_window→400, payload_too_large→413, duplicate_id→409.
+`duplicate_id` добавлен при реализации контракта (этап 1): для 409 «id занят»
+в C7 не было кода, а `slot_conflict` — про слоты, не про id. Все ответы `/api/*`
 (4xx и 5xx) — только эта модель: единый JSON-хендлер бэкенда оборачивает
 дефолтные ответы Express (413 от body-parser, 404 unmatched-маршрута,
 необработанные 5xx) — кейсы E18–E19.
@@ -182,3 +184,6 @@ slot_out_of_window→400, payload_too_large→413. Все ответы `/api/*`
 - План работ по этапам — `docs/work-plan.md`; разбор превентивных проверок —
   `retrospective.md` (архив: `.agents/archive/`, локально).
 - Анализ входных материалов — `docs/project-understanding.md`.
+- `durationMinutes` «кратно 5»: keyword `multipleOf` в OpenAPI есть, но в
+  TypeSpec 1.15 нет декоратора, чтобы его выставить (проверено на эмиттере) —
+  в контракте ограничение задокументировано (`@doc`), проверяет бэкенд (E12).
