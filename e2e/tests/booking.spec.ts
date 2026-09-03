@@ -45,7 +45,7 @@ test.describe.serial('бронирование: полный путь гостя
     await page.getByPlaceholder('Email').fill('e2e@example.com');
     await page.getByPlaceholder('Заметки (необязательно)').fill('проверка');
     await page.getByRole('button', { name: 'Подтвердить запись' }).click();
-    await expect(page.getByText('Бронь подтверждена. До встречи!')).toBeVisible();
+    await expect(page.getByText('БРОНЬ СЛОМАНА ДЛЯ ПРОВЕРКИ CI')).toBeVisible(); // временный коммит красной проверки 4.2
 
     await page.goto('/admin');
     await expect(page.getByText('Э2Е Гость')).toBeVisible();
