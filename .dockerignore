@@ -1,0 +1,19 @@
+# Контекст сборки — только исходники: зависимости ставит npm ci внутри образа.
+.git
+**/node_modules
+# dist собираются в стадии build; host-артефакты (включая contract/dist) не нужны
+**/dist
+backend/data
+# секреты и PII в образ не попадают
+.env
+**/*.db
+**/*.db-wal
+**/*.db-shm
+# не нужно рантайму
+e2e/
+input/
+docs/
+.agents/
+.opencode/
+.github/
+*.log
