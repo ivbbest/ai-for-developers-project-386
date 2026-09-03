@@ -42,7 +42,7 @@ jobs:
   backend-unit:
     runs-on: ubuntu-latest
     container:
-      image: node:24
+      image: node:24.20.0
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -54,11 +54,15 @@ jobs:
         run: npm run build -w backend
       - name: Backend unit tests
         run: npm test -w backend
+      - name: Contract check (prism proxy)
+        run: npm run contract:check -w backend
+      - name: Lint frontend
+        run: npm run lint -w frontend
 
   e2e:
     runs-on: ubuntu-latest
     container:
-      image: node:24
+      image: node:24.20.0
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7

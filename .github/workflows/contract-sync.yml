@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       # та же среда, что dev-обёртка docker-compose.dev.yml (node:24)
-      image: node:24
+      image: node:24.20.0
     steps:
       - uses: actions/checkout@v7
       - name: Install workspace deps from lockfile

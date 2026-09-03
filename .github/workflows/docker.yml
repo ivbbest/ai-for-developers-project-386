@@ -1,0 +1,54 @@
+name: Docker build
+
+# Из независимого ревью: прод-образ нигде не собирался — сломанный Dockerfile
+# прошёл бы все зелёные проверки. Только сборка + локальный smoke контейнера,
+# без публикации в registry.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package.json"
+      - "package-lock.json"
+      - "backend/**"
+      - "frontend/**"
+      - "contract/package.json"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package.json"
+      - "package-lock.json"
+      - "backend/**"
+      - "frontend/**"
+      - "contract/package.json"
+      - ".github/workflows/docker.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: docker build -t cal-com:ci .
+      - name: Smoke the built image (API + static + non-root)
+        run: |
+          docker run -d --name cal-com-smoke -p 3000:3000 cal-com:ci
+          ok=""
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/event-types > /tmp/catalog.json; then ok=1; break; fi
+            sleep 2
+          done
+          if [ -z "$ok" ]; then docker logs cal-com-smoke; exit 1; fi
+          grep -q meet-15 /tmp/catalog.json
+          curl -sf http://localhost:3000/ | grep -q 'id="root"'
+          curl -s http://localhost:3000/api/whatever -o /dev/null -w '%{http_code}\n' | grep -q 404
+          docker inspect --format '{{.State.Health.Status}}' cal-com-smoke
+          docker rm -f cal-com-smoke
