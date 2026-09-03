@@ -155,8 +155,9 @@
 - [ ] **4.2** Workflow `e2e.yml` (push/PR, образ `mcr.microsoft.com/playwright:*`) +
   unit-тесты бэка в той же CI — **по явному согласию владельца**. Критерий: зелёный
   прогон в Actions, падение на сломанном сценарии (проверить один раз).
-- [ ] **4.3** release-please workflow (release-PR, CHANGELOG, SemVer) — **по явному
-  согласию владельца**. Критерий: после мёржа в main появляется release-PR.
+- [~] **4.3** release-please workflow (release-PR, CHANGELOG, SemVer) — **по явному
+  согласию владельца**. Критерий: после мёржа в main появляется release-PR — реализовано (165aed1), подтвердится
+  первым прогоном Actions после мержа (отслеживается по правилу сопровождения).
 
 ## Этап 5 — Docker и публичный деплой — ветка `build/docker` (после мержа 4)
 
