@@ -10,6 +10,9 @@ name: Contract sync
 # «файл vs файл», git для него не нужен.
 on:
   push:
+    # только main: push фичевой ветки при открытом PR = два параллельных рана
+    # одного коммита, а self-hosted runner делит один /__w workspace (см. e2e.yml)
+    branches: [main]
     paths:
       - "contract/**"
       - "package.json"
