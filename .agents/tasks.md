@@ -154,8 +154,22 @@
 
 - [x] 4.1 Playwright: webServer поднимает бэк+фронт; полный сценарий + «слот стал Занято»,
       повторная запись → ошибка (409), создание типа — 4/4 зелёные, ./scripts/e2e.sh — 68a8b9f
-- [ ] 4.2 Workflow `e2e.yml` + unit-тесты бэка в CI — только по явному согласию владельца
-- [ ] 4.3 release-please (release-PR, CHANGELOG, SemVer) — только по явному согласию владельца
+- [x] 4.2 E2E-workflow (согласие 2026-09-03): backend-unit + Playwright в Actions; критерий
+      доказан полным циклом зелёный → красный на сломанном сценарии → откат → зелёный. По ходу:
+      mcr-образ негоден runner'у (CDN закрыт, нет make) → node:24+install-шаг; push-триггеры
+      ограничены main (гонка двух ранов на общий workspace); concurrency-группы — PR #16
+- [~] 4.3 release-please (согласие 2026-09-03): workflow+конфиг — 165aed1; фикс тега экшена
+      @v5 — 493316e. Последний шаг за владельцем: в настройках репо включить «Allow GitHub
+      Actions to create and approve pull requests» и rerun — release-PR (1.0.0, CHANGELOG)
+
+### Этап 5 — Docker и публичный деплой — ветка `build/docker`
+
+- [x] 5.1 Dockerfile multi-stage (node:24 build → node:24-slim runtime) + .dockerignore;
+      один порт, HEALTHCHECK по контрактной ручке; smoke образа: API/статика/SPA/404-JSON,
+      броня переживает restart (volume), healthy, ~103 МБ — 875fdff
+- [ ] 5.2 Деплой (вариант A: Render по docs/deploy-global.md) — нужен аккаунт владельца;
+      критерий: публичный URL, сценарий в браузере, seed после рестарта
+- [ ] 5.3 Публичная ссылка в README, финальная вычитка документации
 
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта

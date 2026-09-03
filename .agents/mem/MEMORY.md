@@ -39,6 +39,7 @@
 - 2026-09-02 | project | Этап 3a готов: ветка `feat/backend-db` (3.1+3.2, 28 тестов) ждёт мержа PR #10; до него 3.3–3.5 (`feat/backend-api`) на паузе | work-plan 3.1/3.2
 - 2026-09-03 | project | **Этап 3 влит в main (PR #10, #12)**: контракт+фронт+бэк+раздача одним портом; следующий — этап 4 (Playwright e2e, release-please по согласию). Облачный review-агент умеет коммитить в ветку PR — его коммиты проверять на соответствие сообщению (был lock-регрессив без обещанного теста) | f913fa8
 - 2026-09-02 | project | **Этап 3b готов, ветка `feat/backend-api` ждёт пуш/PR**: весь API + раздача фронта одним портом, 60 тестов, prism-proxy-сверка; третий пробел контракта закрыт кодом `server_error` (500, синхронизирован со спекой) | work-plan 3.3–3.5
+- 2026-09-03 | project | Этап 4 в main; 5.1 (Docker) готов в ветке `build/docker` (smoke зелёный). Для 4.3 владельцу включить «Allow GitHub Actions to create and approve pull requests» в настройках репо + rerun; для 5.2 нужен аккаунт Render | work-plan этап 5
 
 ## reference
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8
