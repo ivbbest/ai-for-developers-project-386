@@ -6,4 +6,8 @@
 #   ./scripts/e2e.sh --ui / --headed не нужны: CI-headless достаточно
 set -euo pipefail
 cd "$(dirname "$0")/.."
-exec docker compose -f docker-compose.dev.yml run --rm e2e npx playwright test "$@"
+if [ ! -d e2e/node_modules ]; then
+  echo "== первый запуск: npm ci в e2e =="
+  docker compose -f docker-compose.dev.yml run --rm e2e npm ci
+fi
+exec docker compose -f docker-compose.dev.yml run --rm e2e npx playwright test "$@" 

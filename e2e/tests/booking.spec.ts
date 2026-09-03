@@ -36,7 +36,10 @@ test.describe.serial('бронирование: полный путь гостя
     await slotRow(page, 3).click();
     await page.getByRole('button', { name: 'Продолжить' }).click();
     await expect(page).toHaveURL(/\/confirm\?start=/);
-    await expect(page.getByText('Свободно')).toBeVisible(); // инфо-панель с реального слота
+    // инфо-панель: время выбранного слота (idx3 = 09:45–10:00) и посчитанный
+    // сервером счётчик свободных — не «…» из незагруженного состояния
+    await expect(page.getByText('09:45 - 10:00')).toBeVisible();
+    await expect(page.getByText('Свободно', { exact: true }).locator('..')).toContainText(/\d+/);
 
     await page.getByPlaceholder('Имя').fill('Э2Е Гость');
     await page.getByPlaceholder('Email').fill('e2e@example.com');
@@ -100,8 +103,9 @@ test.describe.serial('владелец: создание типа', () => {
     await expect(page.getByText('E2E тип')).toBeVisible();
 
     await openGrid(page, 'e2e-20');
-    // 09:00–18:00 с шагом 20 мин = 27 слотов
-    await expect(page.getByRole('button', { name: /^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/ })).toHaveCount(27);
+    // шаг 20 мин по рабочему окну 09:00–18:00 (константы backend/src/config.ts)
+    const dayMinutes = 18 * 60 - 9 * 60;
+    await expect(page.getByRole('button', { name: /^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/ })).toHaveCount(Math.floor(dayMinutes / 20));
   });
 
   test('занятый id — 409 с человекочитаемой ошибкой', async ({ page }) => {
@@ -120,15 +124,27 @@ test.describe.serial('краевые проверки интерфейса', () 
     await expect(page.getByText('Тип события не найден')).toBeVisible();
   });
 
-  test('двойной клик по «Подтвердить запись» не создаёт вторую бронь (E2, UI-защита)', async ({ page }) => {
+  test('повторный клик по «Подтвердить запись» не создаёт вторую бронь (E2, UI-защита)', async ({ page }) => {
+    // задержка POST, чтобы поймать переход кнопки в disabled: без него
+    // локальный ответ приходит раньше следующей кадpа и защита непроверяема
+    await page.route('**/api/bookings', async (route) => {
+      await new Promise((r) => setTimeout(r, 800));
+      await route.continue();
+    });
     await openGrid(page, 'meet-15');
     // idx 12 = 12:00–12:15 MSK — стык с бронью E2-сценария (11:30–12:00), стык не конфликт
     await slotRow(page, 12).click();
     await page.getByRole('button', { name: 'Продолжить' }).click();
     await page.getByPlaceholder('Имя').fill('Двойной');
     await page.getByPlaceholder('Email').fill('dbl@example.com');
-    const submit = page.getByRole('button', { name: 'Подтвердить запись' });
-    await submit.dblclick();
+    // локатор по типу кнопки: на время отправки текст меняется на «Отправка…»,
+    // name-локатор в этот момент себя не находит
+    const submit = page.locator('button[type=submit]');
+    await submit.click();
+    await expect(submit).toBeDisabled();
+    await expect(submit).toContainText('Отправка');
+    // второй клик по заблокированной кнопке не порождает отправку
+    await submit.click({ force: true, noWaitAfter: true });
     await expect(page.getByText('Бронь подтверждена. До встречи!')).toBeVisible();
     await page.goto('/admin');
     await expect(page.getByText('Двойной')).toHaveCount(1);
