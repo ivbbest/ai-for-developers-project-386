@@ -60,10 +60,12 @@ test.describe.serial('бронирование: полный путь гостя
 
 test.describe.serial('конфликт при бронировании (E2)', () => {
   test('вторая вкладка, не видевшая бронь, получает 409 и ссылку на рефреш', async ({ browser }) => {
+    // idx5 на сетке meet-30 = 11:30–12:00 MSK; бронь первого теста (meet-15
+    // 09:45–10:00) сюда не наступает — занятость по всему календарю
     const pageA = await browser.newPage();
     const pageB = await browser.newPage();
     await openGrid(pageA, 'meet-30');
-    await openGrid(pageB, 'meet-30'); // idx5: 11:30–12:00 MSK — не пересекается с бронью первого теста (занятость по всему календарю)
+    await openGrid(pageB, 'meet-30');
 
     await slotRow(pageA, 5).click();
     await pageA.getByRole('button', { name: 'Продолжить' }).click();
@@ -132,7 +134,8 @@ test.describe.serial('краевые проверки интерфейса', () 
       await route.continue();
     });
     await openGrid(page, 'meet-15');
-    // idx 12 = 12:00–12:15 MSK — стык с бронью E2-сценария (11:30–12:00), стык не конфликт
+    // idx 12 = 09:00 + 12*15 мин = 12:00–12:15 MSK — стык с бронью E2-сценария
+    // (11:30–12:00), стык не конфликт (строгие < / >)
     await slotRow(page, 12).click();
     await page.getByRole('button', { name: 'Продолжить' }).click();
     await page.getByPlaceholder('Имя').fill('Двойной');
