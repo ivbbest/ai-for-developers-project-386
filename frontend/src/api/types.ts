@@ -49,7 +49,8 @@ export type ErrorCode =
   | 'slot_conflict'
   | 'slot_out_of_window'
   | 'payload_too_large'
-  | 'duplicate_id';
+  | 'duplicate_id'
+  | 'server_error';
 
 export interface ApiErrorBody {
   code: ErrorCode;
