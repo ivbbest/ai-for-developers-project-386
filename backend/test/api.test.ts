@@ -376,6 +376,14 @@ describe('3.5: раздача сборки фронта одним портом'
     expect(res.text).toContain('cal-com');
   });
 
+  it('отсутствующий файл-ассет — 404 и не index.html (ловушка SPA-fallback)', async () => {
+    const res = await request(api).get('/assets/missing.js');
+    // браузер не должен получить код приложения с 200 на место скрипта;
+    // дефолтный 404 Express — тоже html, но статус и тело не от index
+    expect(res.status).toBe(404);
+    expect(res.text).not.toContain('cal-com');
+  });
+
   it('E19: /api/* в fallback не проваливается — JSON 404', async () => {
     const res = await request(api).get('/api/whatever');
     expect(res.status).toBe(404);

@@ -11,6 +11,9 @@ export function mountStatic(app: Express, dir: string): boolean {
   app.use(express.static(dir));
   app.use((req, res, next) => {
     if (req.method !== 'GET' || req.path.startsWith('/api')) return next();
+    // классическая ловушка SPA-fallback: отсутствующие файлы (.js/.css/ico)
+    // не должны получать index.html с MIME text/html — только пути без расширения
+    if (/\.[a-z0-9]+$/i.test(req.path)) return next();
     // callback обязателен: гонка «файл удалили между проверкой и отдачей»
     // иначе улетает в error-handler как 500 вместо штатного 404
     res.sendFile(index, (err) => {
