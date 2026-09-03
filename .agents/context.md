@@ -187,6 +187,15 @@
   удалён BookingInput, задокументирована идемпотентная канонизация; 8 пунктов отбиты с причинами
   (HTTP-слой и error-handler — 3.3–3.4; zod по формулировке 3.1; .agents в git — решение владельца;
   DELETE/health нет в контракте) | ветка feat/backend-db bb4aef1
+- 2026-09-03 | Этап 4 закрыт: PR #13/#14/#15/#16 влиты; e2e 6/6 в Actions (критерий 4.2 доказан
+  зелёным → красным на сломанном → откатом → зелёным); найдены и исправлены реальные дефекты CI:
+  mcr-образ не держит npm-сборку better-sqlite3 (CDN закрыт, нет make) → node:24+install-шаг;
+  гонка двух параллельных ранов на общем workspace self-hosted runner → push-триггер только main
+  + concurrency; тег экшена release-please @v5 (не @v17 core). 4.3 ждёт переключатель в
+  настройках репо (создание PR action'ами) | main a3ccca3
+- 2026-09-03 | 5.1 (ветка build/docker): Dockerfile multi-stage node:24→node:24-slim, один порт,
+  HEALTHCHECK по GET /api/event-types, .dockerignore (секреты/БД/node_modules вон); smoke образа:
+  API+статика+SPA+404JSON, броня переживает restart (volume), healthy, ~103 МБ | 875fdff
 - 2026-09-03 | 4.1 e2e (ветка test/e2e): Playwright-раннер как compose-сервис (node:24 + Chromium —
   ABI better-sqlite3 совпадает с dev), webServer = реальные бэк(tsx :3001)+vite(:5173), чистый файл-DB
   через globalSetup; 4 сценария: путь гостя до успеха и «Занято», stale-tab 409 с рефрешем,
