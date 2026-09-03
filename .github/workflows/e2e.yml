@@ -33,6 +33,11 @@ on:
 permissions:
   contents: read
 
+# серия на ref: частые пуши в main не должны копить параллельные прогоны
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend-unit:
     runs-on: ubuntu-latest
