@@ -28,3 +28,18 @@ services:
     stdin_open: true
     tty: true
     command: bash
+
+  # e2e (этап 4): node:24 + Chromium из одного образа — та же база и ABI
+  # нативных модулей, что у dev-сервиса (общий volume с node_modules).
+  # Запуск: ./scripts/e2e.sh [playwright args…]
+  e2e:
+    build:
+      context: ./e2e
+    working_dir: /workspace/e2e
+    volumes:
+      - .:/workspace
+    network_mode: host
+    environment:
+      - NO_COLOR=1
+    stdin_open: true
+    tty: true

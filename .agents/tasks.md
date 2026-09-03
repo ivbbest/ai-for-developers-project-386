@@ -141,7 +141,7 @@
 - [x] перепроверка ветки + 7 раундов ревью PR #10 (канонизация ISO, N+1, shutdown,
       CHECK-ограничения, InvalidDateError, boundary-тесты — 28 зелёные) — 611244b..8ebee40
 
-`feat/backend-api` (ветка готова, ждёт пуш/PR):
+`feat/backend-api` (влита в main, PR #12):
 - [x] 3.3 POST /api/bookings (zod .strict, серверный end, транзакция, 409) + слоты-роут
       и единый JSON-хендлер — 35680b1
 - [x] 3.4 POST /event-types (409 duplicate_id через changes==0) + GET /bookings (E16) +
@@ -149,6 +149,13 @@
 - [x] 3.5 раздача сборки + SPA-fallback (E19), прод-режим одним портом и dev-связка
       с реальным бэком проверены живыми прогонами — 7dbd219; ревью-фиксы (E3-порядок,
       зона start, Violation-гейт) — 3a63abd; в контракт добавлен код server_error (500)
+
+### Этап 4 — e2e и релизы — ветки `test/e2e`, `ci/release-please`
+
+- [x] 4.1 Playwright: webServer поднимает бэк+фронт; полный сценарий + «слот стал Занято»,
+      повторная запись → ошибка (409), создание типа — 4/4 зелёные, ./scripts/e2e.sh — 68a8b9f
+- [ ] 4.2 Workflow `e2e.yml` + unit-тесты бэка в CI — только по явному согласию владельца
+- [ ] 4.3 release-please (release-PR, CHANGELOG, SemVer) — только по явному согласию владельца
 
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта
