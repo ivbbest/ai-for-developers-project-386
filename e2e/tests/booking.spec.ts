@@ -13,7 +13,7 @@ function mskTomorrow(): string {
 
 const DAY = mskTomorrow();
 const slotRow = (page: Page, index: number) =>
-  page.getByRole('button', { name: /^\d{2}:\d{2} - \d{2}:\d{2}/ }).nth(index);
+  page.getByRole('button', { name: /^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/ }).nth(index);
 
 async function openGrid(page: Page, typeId: string): Promise<void> {
   await page.goto(`/book/${typeId}?date=${DAY}`);
@@ -101,7 +101,7 @@ test.describe.serial('владелец: создание типа', () => {
 
     await openGrid(page, 'e2e-20');
     // 09:00–18:00 с шагом 20 мин = 27 слотов
-    await expect(page.getByRole('button', { name: /^\d{2}:\d{2} - \d{2}:\d{2}/ })).toHaveCount(27);
+    await expect(page.getByRole('button', { name: /^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}/ })).toHaveCount(27);
   });
 
   test('занятый id — 409 с человекочитаемой ошибкой', async ({ page }) => {
@@ -111,5 +111,26 @@ test.describe.serial('владелец: создание типа', () => {
     await page.getByLabel(/Длительность/).fill('20');
     await page.getByRole('button', { name: 'Создать тип' }).click();
     await expect(page.getByText(/id уже занят/)).toBeVisible();
+  });
+});
+
+test.describe.serial('краевые проверки интерфейса', () => {
+  test('несуществующий тип — человекочитаемая ошибка, не пустой экран', async ({ page }) => {
+    await page.goto('/book/no-such-type');
+    await expect(page.getByText('Тип события не найден')).toBeVisible();
+  });
+
+  test('двойной клик по «Подтвердить запись» не создаёт вторую бронь (E2, UI-защита)', async ({ page }) => {
+    await openGrid(page, 'meet-15');
+    // idx 12 = 12:00–12:15 MSK — стык с бронью E2-сценария (11:30–12:00), стык не конфликт
+    await slotRow(page, 12).click();
+    await page.getByRole('button', { name: 'Продолжить' }).click();
+    await page.getByPlaceholder('Имя').fill('Двойной');
+    await page.getByPlaceholder('Email').fill('dbl@example.com');
+    const submit = page.getByRole('button', { name: 'Подтвердить запись' });
+    await submit.dblclick();
+    await expect(page.getByText('Бронь подтверждена. До встречи!')).toBeVisible();
+    await page.goto('/admin');
+    await expect(page.getByText('Двойной')).toHaveCount(1);
   });
 });
