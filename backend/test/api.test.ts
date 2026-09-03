@@ -213,6 +213,16 @@ describe('POST /api/bookings (3.3)', () => {
     expect(res.body.message).toMatch(/зоной/);
   });
 
+  it('T2: ровно 00:00 MSK — «сегодня» уже новый день (21:00Z предыдущего)', async () => {
+    // NOW = 2026-09-10T21:00:00Z = 2026-09-11 00:00 MSK ровно
+    const midnight = createApp(makeDb(), { nowFn: () => new Date('2026-09-10T21:00:00Z') });
+    const y = await request(midnight).get('/api/event-types/meet-15/slots?date=2026-09-10');
+    expect(y.status).toBe(400);
+    expect(y.body.code).toBe('slot_out_of_window'); // вчера относительно MSK
+    const ok = await request(midnight).get('/api/event-types/meet-15/slots?date=2026-09-11');
+    expect(ok.status).toBe(200);
+  });
+
   it('E8: неизвестные поля — RU-список, не «Поле ""» с англ. текстом', async () => {
     const res = await request(api).post('/api/bookings').send(booking({ owner: 'x', end: 'y' }));
     expect(res.status).toBe(400);
@@ -277,6 +287,14 @@ describe('POST /api/event-types (3.4)', () => {
     expect((await request(api).post('/api/event-types').send(type({ id: 'MEET_X' }))).status).toBe(400);
     expect((await request(api).post('/api/event-types').send(type({ owner: 'tota' }))).status).toBe(400);
     expect((await request(api).post('/api/event-types').send(type({ title: 'д'.repeat(81) }))).status).toBe(400);
+  });
+
+  it('T1-края: id="", title только пробелы, description >500 → 400; 5 и 540 → 201', async () => {
+    expect((await request(api).post('/api/event-types').send(type({ id: '' }))).status).toBe(400);
+    expect((await request(api).post('/api/event-types').send(type({ title: '   ' }))).status).toBe(400);
+    expect((await request(api).post('/api/event-types').send(type({ description: 'о'.repeat(501) }))).status).toBe(400);
+    expect((await request(api).post('/api/event-types').send(type({ id: 'min-5', durationMinutes: 5 }))).status).toBe(201);
+    expect((await request(api).post('/api/event-types').send(type({ id: 'max-540', durationMinutes: 540 }))).status).toBe(201);
   });
 });
 
