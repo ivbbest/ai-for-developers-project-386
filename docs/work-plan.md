@@ -165,7 +165,7 @@
 Детали: `docs/project-understanding.md` §9 «Шаг 5», §11 решения 9–10; полный
 пошаговый путь продакшена — `docs/deploy-global.md`.
 
-- [ ] **5.1** `Dockerfile` multi-stage + `.dockerignore`; CMD — единое приложение
+- [x] **5.1** `Dockerfile` multi-stage + `.dockerignore`; CMD — единое приложение
   (API + статика) на `PORT`. Критерий: `docker build`; `docker run -e PORT=…` →
   `curl` отвечает (API и `/`).
 - [x] **5.2** Деплой по `docs/deploy-global.md` (вариант A: Render; запасной — Railway;
