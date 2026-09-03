@@ -391,3 +391,17 @@ describe('3.5: раздача сборки фронта одним портом'
     expect(res.status).toBe(404);
   });
 });
+
+describe('error handler: необработанное исключение', () => {
+  it('500 в формате Error server_error, не html (E19)', async () => {
+    const boom = createApp(makeDb(), {
+      nowFn: () => {
+        throw new Error('проверка 500-ветки');
+      },
+    });
+    const res = await request(boom).get('/api/bookings');
+    expect(res.status).toBe(500);
+    expect(res.headers['content-type']).toMatch(/application\/json/);
+    expect(res.body).toEqual({ code: 'server_error', message: 'Внутренняя ошибка сервера' });
+  });
+});
