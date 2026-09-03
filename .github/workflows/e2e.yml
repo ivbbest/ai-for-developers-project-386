@@ -35,11 +35,15 @@ jobs:
       image: node:24
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - run: npm ci
-      - run: npm run typecheck -w backend
-      - run: npm run build -w backend
-      - run: npm test -w backend
+      - uses: actions/checkout@v7
+      - name: Install workspace deps from lockfile
+        run: npm ci
+      - name: Typecheck backend
+        run: npm run typecheck -w backend
+      - name: Build backend
+        run: npm run build -w backend
+      - name: Backend unit tests
+        run: npm test -w backend
 
   e2e:
     runs-on: ubuntu-latest
@@ -47,7 +51,7 @@ jobs:
       image: node:24
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install workspace deps from lockfile
         run: npm ci
       - name: Install e2e deps (standalone install)
