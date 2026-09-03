@@ -262,6 +262,7 @@ components:
             - slot_out_of_window
             - payload_too_large
             - duplicate_id
+            - server_error
           description: Код ошибки; соответствие HTTP — в описании контракта (C7)
         message:
           type: string

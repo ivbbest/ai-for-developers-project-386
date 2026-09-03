@@ -53,6 +53,55 @@ export function assertValidDate(dateStr: string): void {
   }
 }
 
+// Единый пересчёт «UTC-момент → календарный день MSK + минута дня + полночь
+// этого дня в UTC». Держится в одном месте: buildSlots и validateBookingStart
+// обязаны сходиться на любой future правке пояса (см. MSK_OFFSET_MINUTES).
+const MSK_OFFSET_MS = MSK_OFFSET_MINUTES * 60_000;
+function mskDayParts(utcMs: number): { dayIso: string; minuteOfDay: number; dayStartUtcMs: number } {
+  const shifted = utcMs + MSK_OFFSET_MS; // часовая стрелка MSK, считаем «как UTC»
+  const dayStartPseudo = Math.floor(shifted / 86_400_000) * 86_400_000;
+  return {
+    dayIso: new Date(dayStartPseudo).toISOString().slice(0, 10),
+    minuteOfDay: (shifted - dayStartPseudo) / 60_000,
+    dayStartUtcMs: dayStartPseudo - MSK_OFFSET_MS,
+  };
+}
+
+// Старт брони обязан совпадать со слотом сетки типа (E3/E5/E7):
+// парсится, дата в окне, не в прошлом (сообщение «время слота уже прошло»
+// отличается от оконного — фронт по нему рефрешит сетку), лежит на шаге
+// от 09:00 MSK и заканчивается не позже 18:00.
+export function validateBookingStart(type: EventType, startIso: string, nowFn: NowFn = now): void {
+  const t = nowFn();
+  // без зоны Date.parse трактует строку как локальное время — семантика слотов
+  // поехала бы от часов сервера; контракт обещает utcDateTime
+  if (!/(?:Z|[+-]\d{2}:\d{2})$/.test(startIso)) {
+    throw new ValidationError(`start должен быть с зоной (…Z или ±hh:mm): ${startIso}`);
+  }
+  const startMs = Date.parse(startIso);
+  if (Number.isNaN(startMs)) {
+    throw new ValidationError(`start не парсится как дата: ${startIso}`);
+  }
+  // E3 раньше E5: «страница висела до полуночи» даёт старт вчера — дата формально
+  // вне окна, но сообщение обязано быть «время слота уже прошло» (фронт по нему
+  // рефрешит сетку, а не подсказывает про дату)
+  if (startMs < t.getTime()) {
+    throw new OutOfWindowError('время слота уже прошло');
+  }
+  const day = mskDayParts(startMs);
+  const today = mskDay(t);
+  if (day.dayIso < today || day.dayIso > addDays(today, WINDOW_DAYS - 1)) {
+    throw new OutOfWindowError(`дата вне окна записи (${WINDOW_DAYS} дней, MSK): ${day.dayIso}`);
+  }
+  if (
+    day.minuteOfDay < WORK_START_MINUTE ||
+    day.minuteOfDay + type.durationMinutes > WORK_END_MINUTE ||
+    (day.minuteOfDay - WORK_START_MINUTE) % type.durationMinutes !== 0
+  ) {
+    throw new ValidationError('start вне сетки слотов типа');
+  }
+}
+
 // Сетка дня (спека «Доменные сущности», Slot): от 09:00 MSK с шагом
 // durationMinutes, пока end <= 18:00 MSK; прошедшие слоты (start < now)
 // исключены; занятые — со статусом booked (пересечение с ЛЮБОЙ бронью).
@@ -73,10 +122,10 @@ export function buildSlots(db: Db, type: EventType, dateStr: string, nowFn: NowF
   }
 
   const nowMs = t.getTime();
-  // MSK-минута дня → абсолютный UTC-момент: день начинается в 00:00 MSK,
-  // это на MSK_OFFSET_MINUTES раньше, чем 00:00 того же UTC-дня.
-  const dayStartUtc = Date.parse(`${dateStr}T00:00:00Z`) - MSK_OFFSET_MINUTES * 60_000;
-  const at = (minuteOfDay: number) => new Date(dayStartUtc + minuteOfDay * 60_000);
+  // MSK-полночь календарного дня: полдень UTC гарантированно лежит внутри
+  // того же дня MSK (12:00Z = 15:00 MSK), helper даёт точную полночь −3ч
+  const { dayStartUtcMs } = mskDayParts(Date.parse(`${dateStr}T12:00:00Z`));
+  const at = (minuteOfDay: number) => new Date(dayStartUtcMs + minuteOfDay * 60_000);
 
   // Брони дня — одним запросом, статус слота считается в памяти:
   // по запросу на слот (36 на день) превращалось в N+1

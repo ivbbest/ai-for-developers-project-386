@@ -2,7 +2,7 @@ import type { Db } from './connection.js';
 import { insertEventType } from '../repositories/eventTypes.js';
 import type { EventType } from '../types.js';
 
-// Seed типов по спеке; идемпотентен через INSERT OR IGNORE — диск Render
+// Seed типов по спеке; идемпотентен через ON CONFLICT(id) DO NOTHING — диск Render
 // эфемерен (§11 решение 10), файл может быть пуст/стёрт, seed пересоздаёт.
 // Поля правок не меняются: если тип уже есть, оставляем как есть (владелец
 // мог создать свой id; сид не перетирает данные).

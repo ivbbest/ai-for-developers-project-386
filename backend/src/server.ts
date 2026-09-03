@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { openDb, migrate } from './db/connection.js';
 import { seed } from './db/seed.js';
 import { createApp } from './app.js';
@@ -9,11 +10,26 @@ if (!Number.isInteger(port) || port <= 0 || port > 65535) {
   process.exit(1);
 }
 
-const db = openDb();
-migrate(db);
-seed(db);
+// Каталог сборки фронта (3.5): STATIC_DIR (Docker), по умолчанию ../../frontend/dist.
+// Отсутствует (dev без сборки) — сервер поднимется только API.
+const staticDir =
+  process.env.STATIC_DIR || fileURLToPath(new URL('../../frontend/dist', import.meta.url));
 
-const server = createApp(db).listen(port, () => {
+// Сбой ФС/прав при открытии БД — внятный выход, а не голый стек.
+function initDb() {
+  try {
+    const opened = openDb();
+    migrate(opened);
+    seed(opened);
+    return opened;
+  } catch (err) {
+    console.error('не удалось открыть/подготовить БД — проверьте DATABASE_PATH и права:', (err as Error).message);
+    process.exit(1);
+  }
+}
+const db = initDb();
+
+const server = createApp(db, { staticDir }).listen(port, () => {
   console.log(`cal-com API listening on :${port}`);
 });
 

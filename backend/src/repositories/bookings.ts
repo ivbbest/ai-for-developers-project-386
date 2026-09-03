@@ -46,13 +46,14 @@ function toBooking(row: BookingRow): Booking {
 
 // Правило занятости (спека, ядро 1): пересечение интервалов по ВСЕМ броням,
 // тип не учитывается; стык end == next.start конфликтом не считается.
-const OVERLAP_WHERE = 'start < @end AND end > @start';
+// часть WHERE-запроса; константа модуля, не пользовательский ввод
+const OVERLAP_CLAUSE = 'start < @end AND end > @start';
 
 export function findOverlaps(db: Db, start: string, end: string): Booking[] {
   const rows = db
     .prepare(
       `SELECT id, event_type_id, start, end, name, email, notes, created_at
-       FROM bookings WHERE ${OVERLAP_WHERE} ORDER BY start`,
+       FROM bookings WHERE ${OVERLAP_CLAUSE} ORDER BY start`,
     )
     .all({ start: toIsoUtc(start), end: toIsoUtc(end) }) as BookingRow[];
   return rows.map(toBooking);
