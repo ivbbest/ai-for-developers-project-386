@@ -11,6 +11,7 @@ backend/data
 **/*.db-shm
 # не нужно рантайму
 e2e/
+contract/mock-server/
 input/
 docs/
 .agents/
