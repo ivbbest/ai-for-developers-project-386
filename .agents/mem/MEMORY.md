@@ -41,6 +41,7 @@
 - 2026-09-02 | project | **Этап 3b готов, ветка `feat/backend-api` ждёт пуш/PR**: весь API + раздача фронта одним портом, 60 тестов, prism-proxy-сверка; третий пробел контракта закрыт кодом `server_error` (500, синхронизирован со спекой) | work-plan 3.3–3.5
 - 2026-09-03 | project | Этап 4 в main; 5.1 (Docker) готов в ветке `build/docker` (smoke зелёный). Для 4.3 владельцу включить «Allow GitHub Actions to create and approve pull requests» в настройках репо + rerun; для 5.2 нужен аккаунт Render | work-plan этап 5
 - 2026-09-03 | project | **Все этапы 1–5 плана выполнены**: контракт, фронт, бэк, e2e+CI, Docker, релиз v1.0.0, демо на Render (cal-com-97sr.onrender.com). Наблюдения: USER node в образе (free-тариф работает от root — решать при смене площадки/тарифа), IP-фронт Render может быть недоступен из рабочей сети — публичные проверки за браузером владельца | work-plan
+- 2026-09-03 | reference | docs/decision-guide.md — точка входа для аудита/ревью: контекст+решения+аудит-след; выполненные planning-доки — docs/archive/ | ветка docs/decision-guide
 
 ## reference
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8

@@ -196,6 +196,12 @@
 - 2026-09-03 | 5.1 (ветка build/docker): Dockerfile multi-stage node:24→node:24-slim, один порт,
   HEALTHCHECK по GET /api/event-types, .dockerignore (секреты/БД/node_modules вон); smoke образа:
   API+статика+SPA+404JSON, броня переживает restart (volume), healthy, ~103 МБ | 875fdff
+- 2026-09-03 | Документация по итогу курса: `docs/decision-guide.md` (контекст, продукт,
+  архитектура, каждое решение — задача/альтернативы/выбор/цена, рецепты запуска, аудиторский
+  след PR→доказательство, открытые наблюдения); выполненные planning-доки перенесены в
+  `docs/archive/` (work-plan, reading-guide, specs-TEMPLATE), все перекрёстные ссылки
+  (AGENTS, спеки, разбор, реестр) переведены; статусные шапки обновлены; NBSP-проход по гайду |
+  ветка docs/decision-guide
 - 2026-09-03 | Этап 4 закрыт полностью: E2E-workflow влит (PR #16; критерий доказан циклом
   зелёный→красный→зелёный; на main E2E success), релиз: PR #15 (фикс @v5) → #18 → тег
   cal-com-v1.0.0 + GitHub Release (переключатель «Actions can create PR» включён) | main fadfdea
