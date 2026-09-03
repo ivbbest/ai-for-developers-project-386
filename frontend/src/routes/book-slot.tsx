@@ -54,6 +54,14 @@ export function BookSlotPage() {
     };
   }, [typeId]);
 
+  // роутер переиспользует компонент при смене :typeId — без сброса под новым
+  // заголовком остаётся сетка и выбор предыдущего типа
+  useEffect(() => {
+    setDay(null);
+    setSlots(null);
+    setSelected(null);
+  }, [typeId]);
+
   const loadSlots = useCallback((d: Date) => {
     if (!typeId) return;
     setDay(d);
