@@ -1,10 +1,9 @@
 import { defineConfig } from '@playwright/test';
+import { BACKEND_PORT, DB_PATH } from './env.js';
 
 // webServer поднимает РЕАЛЬНЫЕ бэкенд (tsx, порт 3001) и фронт (vite, :5173) —
 // ровно dev-связку из README; стаб контракта в e2e не участвует.
 // workers: 1 — сценарии делят одну БД (/tmp/cal-e2e.db) и идут последовательно.
-const BACKEND_PORT = 3001; // один узел: webServer бэка и VITE_API_TARGET фронта
-
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
@@ -21,7 +20,7 @@ export default defineConfig({
       command: 'npx tsx src/server.ts',
       cwd: '../backend',
       url: `http://localhost:${BACKEND_PORT}/api/event-types`,
-      env: { PORT: String(BACKEND_PORT), DATABASE_PATH: '/tmp/cal-e2e.db' },
+      env: { PORT: String(BACKEND_PORT), DATABASE_PATH: DB_PATH },
       timeout: 60_000,
       reuseExistingServer: false,
     },
