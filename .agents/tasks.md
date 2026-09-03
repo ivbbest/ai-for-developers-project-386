@@ -158,18 +158,19 @@
       доказан полным циклом зелёный → красный на сломанном сценарии → откат → зелёный. По ходу:
       mcr-образ негоден runner'у (CDN закрыт, нет make) → node:24+install-шаг; push-триггеры
       ограничены main (гонка двух ранов на общий workspace); concurrency-группы — PR #16
-- [~] 4.3 release-please (согласие 2026-09-03): workflow+конфиг — 165aed1; фикс тега экшена
-      @v5 — 493316e. Последний шаг за владельцем: в настройках репо включить «Allow GitHub
-      Actions to create and approve pull requests» и rerun — release-PR (1.0.0, CHANGELOG)
+- [x] 4.3 release-please: фикс тега экшена @v5 (PR #15) + переключатель «Actions can create PR»
+      включён — release-PR #18 смержен: тег **cal-com-v1.0.0**, CHANGELOG, GitHub Release
 
 ### Этап 5 — Docker и публичный деплой — ветка `build/docker`
 
 - [x] 5.1 Dockerfile multi-stage (node:24 build → node:24-slim runtime) + .dockerignore;
       один порт, HEALTHCHECK по контрактной ручке; smoke образа: API/статика/SPA/404-JSON,
       броня переживает restart (volume), healthy, ~103 МБ — 875fdff
-- [ ] 5.2 Деплой (вариант A: Render по docs/deploy-global.md) — нужен аккаунт владельца;
-      критерий: публичный URL, сценарий в браузере, seed после рестарта
-- [ ] 5.3 Публичная ссылка в README, финальная вычитка документации
+- [x] 5.2 Деплой на Render (вариант A): **https://cal-com-97sr.onrender.com** — Docker-сборка,
+      PORT от платформы (:10000), Live; сценарий бронирования в браузере пройден; после
+      Manual deploy → Refresh seed на месте (эфемерный диск free-таргета — ожидаемо по §11.10)
+- [x] 5.3 Секция «Демо» в README (URL + оговорки тарифа), актуальные команды тестов/Docker;
+      статусы плана закрыты — **все этапы 1–5 плана выполнены**
 
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта

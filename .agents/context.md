@@ -196,6 +196,13 @@
 - 2026-09-03 | 5.1 (ветка build/docker): Dockerfile multi-stage node:24→node:24-slim, один порт,
   HEALTHCHECK по GET /api/event-types, .dockerignore (секреты/БД/node_modules вон); smoke образа:
   API+статика+SPA+404JSON, броня переживает restart (volume), healthy, ~103 МБ | 875fdff
+- 2026-09-03 | Этап 4 закрыт полностью: E2E-workflow влит (PR #16; критерий доказан циклом
+  зелёный→красный→зелёный; на main E2E success), релиз: PR #15 (фикс @v5) → #18 → тег
+  cal-com-v1.0.0 + GitHub Release (переключатель «Actions can create PR» включён) | main fadfdea
+- 2026-09-03 | 5.2 Render (вариант A): https://cal-com-97sr.onrender.com — Live, PORT инжектится
+  платформой, сценарий в браузере ок, после Refresh seed на месте (эфемерный диск free-таргета).
+  Из рабочей сети TLS к IP-фронту Render виснет — проверку держим браузером владельца.
+  5.3: README «Демо»/команды/Docker, статусы плана и реестра — этапы 1–5 закрыты | ветка docs/deploy-readme
 - 2026-09-03 | 4.1 e2e (ветка test/e2e): Playwright-раннер как compose-сервис (node:24 + Chromium —
   ABI better-sqlite3 совпадает с dev), webServer = реальные бэк(tsx :3001)+vite(:5173), чистый файл-DB
   через globalSetup; 4 сценария: путь гостя до успеха и «Занято», stale-tab 409 с рефрешем,

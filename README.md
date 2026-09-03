@@ -8,12 +8,21 @@
 Учебный проект Хекслета: https://ru.hexlet.io/programs/ai-for-developers
 Как это должно работать: https://files.hexlet.app/a/2ipc5m
 
+## Демо
+
+Публичный адрес: **https://cal-com-97sr.onrender.com** (Render, бесплатный тариф).
+
+Особенности тарифа: после простоя первый запрос может идти 30–60 секунд
+(холодный старт); диск эфемерный — после рестарта сервис пересоздаёт
+seed-типы, а тестовые брони обнуляются. Код и данные демонстрационные.
+
 ## Стек
 
 - Контракт: TypeSpec → OpenAPI (`contract/`) — единый источник правды для фронта и бэка
 - Фронтенд: Vite, React, TypeScript, Tailwind, shadcn/ui, react-router
 - Бэкенд: Node.js 24, Express 5, zod, SQLite (better-sqlite3)
-- Тесты: smoke контракта (Prism) и стаба, юнит-тесты бэкенда (vitest)
+- Тесты: smoke контракта (Prism) и стаба, юнит-тесты бэкенда (vitest),
+  сквозные e2e (Playwright), сверка ответов с OpenAPI через prism-proxy
 - Окружение разработки: все команды — в контейнере `node:24` (`./scripts/dev.sh`)
 
 ## Установка
@@ -50,7 +59,14 @@ npm install
 ./scripts/dev.sh npm run smoke -w @cal-com/mock-server   # сценарий на стабе
 ```
 
-Юнит-тесты бэкенда (`npm test -w backend`) — после этапа 3.
+Юнит-тесты и проверки бэкенда:
+
+```bash
+./scripts/dev.sh npm test -w backend                       # хранилище, слоты, API (vitest)
+./scripts/dev.sh npm run contract:check -w backend         # ответы бэкенда против OpenAPI (prism proxy)
+./scripts/e2e.sh                                           # Playwright: полный сценарий (первый запуск
+                                                           # сам поставит зависимости и соберёт образ)
+```
 
 **Прод-режим одним портом** (без Docker):
 
@@ -61,8 +77,14 @@ PORT=3001 ./scripts/dev.sh node backend/dist/server.js  # :3001 — и UI, и AP
 ```
 
 Бэкенд сам раздаёт `frontend/dist` + SPA-fallback на не-`/api`-маршруты;
-каталог сборки ищется по `STATIC_DIR` (Docker-переопределение) или рядом с
-собой. Одноконтейнерная упаковка — этап Docker.
+каталог сборки ищется по `STATIC_DIR` (Docker-переопределение) или рядом с собой.
+
+**Docker** (то же приложение одним контейнером, `PORT` из env, по умолчанию 3000):
+
+```bash
+docker build -t cal-com .
+docker run -p 3000:3000 -e PORT=3000 -v ./data:/app/backend/data cal-com
+```
 
 ## Как это работает
 
