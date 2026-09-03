@@ -9,6 +9,11 @@ name: E2E
 # e2e и dev-обёрткой: одна среда везде.
 on:
   push:
+    # только main: push фичевой ветки при открытом PR запускал бы второй
+    # параллельный ран того же коммита — два джоба на одном self-hosted
+    # runner делят /__w workspace и перетирают друг у друга файлы (первый
+    # прогон падал с «unterminated string literal» именно так)
+    branches: [main]
     paths:
       - "e2e/**"
       - "backend/**"
