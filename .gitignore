@@ -17,5 +17,9 @@ backend/data/
 backend/dist/
 frontend/dist/
 
+# Артефакты Playwright
+e2e/test-results/
+e2e/playwright-report/
+
 # Архив одноразовых аудитов (локально, в git не попадает)
 .agents/archive/
