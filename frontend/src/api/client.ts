@@ -11,8 +11,14 @@ import {
 // проксирует Vite (vite.config proxy /api), в проде бэк раздаёт фронт с
 // того же порта (§11 решение 9). Ошибки бэкенда — единая модель Error (C7).
 
+const REQUEST_TIMEOUT_MS = 15_000;
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api${path}`, init);
+  // сеть не гарантирует завершения: без таймаута экран висит в skeleton вечно
+  const res = await fetch(`/api${path}`, {
+    ...init,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
   if (!res.ok) {
     let body;
     try {
