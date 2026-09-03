@@ -1,0 +1,75 @@
+name: E2E
+
+# Этап 4.2 (согласие владельца 2026-09-03): юнит-тесты бэкенда и Playwright
+# на push/PR, затрагивающие приложение. e2e-джоб — node:24 + `playwright
+# install --with-deps`, а не mcr-образ: runner'у этого проекта недоступен
+# CDN релизов GitHub, prebuild better-sqlite3 не скачивается и помогает только
+# сборка из исходников — в mcr.playwright нет make, в node:24 есть (backend-unit
+# прошёл, e2e упал — первый прогон). node:24 совпадает с локальным Dockerfile
+# e2e и dev-обёрткой: одна среда везде.
+on:
+  push:
+    # только main: push фичевой ветки при открытом PR запускал бы второй
+    # параллельный ран того же коммита — два джоба на одном self-hosted
+    # runner делят /__w workspace и перетирают друг у друга файлы (первый
+    # прогон падал с «unterminated string literal» именно так)
+    branches: [main]
+    paths:
+      - "e2e/**"
+      - "backend/**"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    paths:
+      - "e2e/**"
+      - "backend/**"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/e2e.yml"
+
+permissions:
+  contents: read
+
+# серия на ref: частые пуши в main не должны копить параллельные прогоны
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-unit:
+    runs-on: ubuntu-latest
+    container:
+      image: node:24
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install workspace deps from lockfile
+        run: npm ci
+      - name: Typecheck backend
+        run: npm run typecheck -w backend
+      - name: Build backend
+        run: npm run build -w backend
+      - name: Backend unit tests
+        run: npm test -w backend
+
+  e2e:
+    runs-on: ubuntu-latest
+    container:
+      image: node:24
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install workspace deps from lockfile
+        run: npm ci
+      - name: Install e2e deps (standalone install)
+        run: npm ci
+        working-directory: e2e
+      - name: Install Chromium (тот же шаг, что в e2e/Dockerfile)
+        run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - name: Playwright suite (webServer поднимает бэк и vite сам)
+        run: npx playwright test
+        working-directory: e2e

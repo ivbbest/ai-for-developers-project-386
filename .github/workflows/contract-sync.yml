@@ -10,6 +10,9 @@ name: Contract sync
 # «файл vs файл», git для него не нужен.
 on:
   push:
+    # только main: push фичевой ветки при открытом PR = два параллельных рана
+    # одного коммита, а self-hosted runner делит один /__w workspace (см. e2e.yml)
+    branches: [main]
     paths:
       - "contract/**"
       - "package.json"
@@ -25,6 +28,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: contract-sync-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -32,7 +39,7 @@ jobs:
       # та же среда, что dev-обёртка docker-compose.dev.yml (node:24)
       image: node:24
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install workspace deps from lockfile
         run: npm ci
       - name: Save the committed artifact for comparison
