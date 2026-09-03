@@ -1,0 +1,55 @@
+name: E2E
+
+# Этап 4.2 (согласие владельца 2026-09-03): юнит-тесты бэкенда и Playwright
+# на push/PR, затрагивающие приложение. e2e — официальный образ playwright
+# (браузеры вшиты; версия совпадает с пином e2e/package.json, npm ставит
+# свои prebuild-нативники под node этого образа — общей volume-привязки нет).
+on:
+  push:
+    paths:
+      - "e2e/**"
+      - "backend/**"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/e2e.yml"
+  pull_request:
+    paths:
+      - "e2e/**"
+      - "backend/**"
+      - "frontend/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/e2e.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend-unit:
+    runs-on: ubuntu-latest
+    container:
+      image: node:24
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run typecheck -w backend
+      - run: npm run build -w backend
+      - run: npm test -w backend
+
+  e2e:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install workspace deps from lockfile
+        run: npm ci
+      - name: Install e2e deps (standalone install)
+        run: npm ci
+        working-directory: e2e
+      - name: Playwright suite (webServer поднимает бэк и vite сам)
+        run: npx playwright test
+        working-directory: e2e
