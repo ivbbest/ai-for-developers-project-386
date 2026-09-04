@@ -64,9 +64,8 @@ app.use((err, _req, res, next) => {
 app.get('/api/event-types', (_req, res) => res.json(state.eventTypes));
 
 app.get('/api/event-types/:id/slots', (req, res) => {
-  if (!ID_PATTERN.test(req.params.id)) {
-    return error(res, 400, 'validation', `id не соответствует паттерну: ${req.params.id}`);
-  }
+  // как бэкенд: сначала наличие типа (404), формат id не отделяем — его путь
+  // и так не существует в состоянии стаба
   const type = state.eventTypes.find((t) => t.id === req.params.id);
   if (!type) return error(res, 404, 'not_found', `Тип события не найден: ${req.params.id}`);
   const date = req.query.date;
@@ -98,7 +97,10 @@ app.post('/api/bookings', (req, res) => {
   const type = state.eventTypes.find((t) => t.id === b.eventTypeId);
   if (!type) return error(res, 404, 'not_found', `Тип события не найден: ${b.eventTypeId}`);
   const startMs = typeof b.start === 'string' ? Date.parse(b.start) : Number.NaN;
+  // зеркало backend validateBookingStart: зона обязательна, «в прошлом» (E3)
+  // раньше «вне окна» (E5) с отдельным сообщением, сетка — validation
   if (
+    typeof b.start !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/.test(b.start) ||
     Number.isNaN(startMs) ||
     typeof b.name !== 'string' || b.name === '' || b.name.length > 120 ||
     typeof b.email !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.email) ||
@@ -106,13 +108,16 @@ app.post('/api/bookings', (req, res) => {
   ) {
     return error(res, 400, 'validation', 'name/email/start/notes не проходят валидацию контракта');
   }
-  // start обязан совпадать со слотом сетки типа (E3/E7): рабочий день,
-  // выравнивание по 09:00 MSK с шагом duration, окно C4, не в прошлом
   const mskMs = startMs + MSK_OFFSET_MIN * 60_000;
   const dayStartMs = Math.floor(mskMs / 86_400_000) * 86_400_000;
   const minuteOfDay = (mskMs - dayStartMs) / 60_000;
   const startDay = new Date(dayStartMs).toISOString().slice(0, 10);
   const today = mskDay(new Date());
+  // стаб сверяет «прошло» по системным часам: NOW-env — фича бэкенда (nowFn),
+  // в стабе сознательно не дублируем — мок всегда живёт на реальном времени
+  if (startMs < Date.now()) {
+    return error(res, 400, 'slot_out_of_window', 'время слота уже прошло');
+  }
   if (startDay < today || startDay > addDays(today, WINDOW_DAYS - 1)) {
     return error(res, 400, 'slot_out_of_window', `дата вне окна записи (${WINDOW_DAYS} дней, MSK): ${startDay}`);
   }
@@ -122,9 +127,6 @@ app.post('/api/bookings', (req, res) => {
     (minuteOfDay - WORK_START) % type.durationMinutes !== 0
   ) {
     return error(res, 400, 'validation', 'start вне сетки слотов типа');
-  }
-  if (startMs < Date.now()) {
-    return error(res, 400, 'validation', 'start в прошлом');
   }
   const startIso = new Date(startMs).toISOString();
   const endIso = new Date(startMs + type.durationMinutes * 60_000).toISOString();

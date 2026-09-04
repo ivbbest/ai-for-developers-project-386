@@ -81,7 +81,7 @@ check_body "slot_out_of_window" '"slot_out_of_window"'
 DAY14=$(TZ=Europe/Moscow date -d "+14 days" +%F)
 check "slots +14 день вне окна → 400 (E5)" 400 "$BASE/event-types/meet-15/slots?date=$DAY14"
 check_body "+14 — slot_out_of_window" '"slot_out_of_window"'
-check "slots id вне паттерна → 400 (C5)" 400 "$BASE/event-types/MEET_1/slots?date=$TOMORROW"
+check "slots id не-паттерна → 404 как бэкенд (поиск типа раньше формата)" 404 "$BASE/event-types/MEET_1/slots?date=$TOMORROW"
 check "slots нет типа → 404" 404 "$BASE/event-types/nope/slots?date=$TOMORROW"
 check_body "not_found" '"not_found"'
 check "booking нет типа → 404" 404 -H 'Content-Type: application/json' -d '{"eventTypeId":"nope","start":"2026-01-01T06:00:00.000Z","name":"Г","email":"g@example.com"}' "$BASE/bookings"

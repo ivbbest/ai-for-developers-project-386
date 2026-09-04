@@ -41,9 +41,10 @@
 - 2026-09-02 | project | **Этап 3b готов, ветка `feat/backend-api` ждёт пуш/PR**: весь API + раздача фронта одним портом, 60 тестов, prism-proxy-сверка; третий пробел контракта закрыт кодом `server_error` (500, синхронизирован со спекой) | work-plan 3.3–3.5
 - 2026-09-03 | project | Этап 4 в main; 5.1 (Docker) готов в ветке `build/docker` (smoke зелёный). Для 4.3 владельцу включить «Allow GitHub Actions to create and approve pull requests» в настройках репо + rerun; для 5.2 нужен аккаунт Render | work-plan этап 5
 - 2026-09-03 | project | **Все этапы 1–5 плана выполнены**: контракт, фронт, бэк, e2e+CI, Docker, релиз v1.0.0, демо на Render (cal-com-97sr.onrender.com). Наблюдения: USER node в образе (free-тариф работает от root — решать при смене площадки/тарифа), IP-фронт Render может быть недоступен из рабочей сети — публичные проверки за браузером владельца | work-plan
-- 2026-09-03 | reference | docs/decision-guide.md — точка входа для аудита/ревью: контекст+решения+аудит-след; выполненные planning-доки — docs/archive/ | ветка docs/decision-guide
+- 2026-09-03 | project | Ветка `docs/review-recommendations` — единый проверенный документ двух ревью + фиксы P1/P2 (union, стаб-коды, стейт-сброс, expired-ветка, a11y, таймаут, NOW-warn, USER node, CI-гигиена); остаток: e2e-доводка, email-длина, P3 | 1ad1b3c..dfa2b5d
 
 ## reference
+- 2026-09-03 | reference | docs/decision-guide.md — точка входа для аудита/ревью: контекст+решения+аудит-след; выполненные planning-доки — docs/archive/ | ветка docs/decision-guide
 - 2026-08-30 | reference | opencode GitHub-интеграция: https://opencode.ai/docs/github/ | шаг 8
 - 2026-09-01 | reference | 4 workflow-файла opencode: opencode.yml (интерактив /oc, ivbbest), opencode-triage.yml (issues), opencode-review.yml (PR), opencode-schedule.yml (schedule+dispatch). Ключ OPENCODE_API_KEY, модель opencode/big-pickle, share:false. Runbook — github-integration.md | 2026-09-01
 - 2026-09-01 | project | Автосценарии opencode: триаж — анти-спам по возрасту аккаунта>=30дней (github-script), ревью — read-права, schedule — write-права (нет юзер-контекста). Докзы https://opencode.ai/docs/en/github/ | 2026-09-01
@@ -66,3 +67,4 @@
 - 2026-09-01 | project | Прод = один контейнер: Express раздаёт API + `frontend/dist` + SPA-fallback на `PORT`; dev-связь фронта с бэком — Vite-proxy `/api` (CORS не нужен) | §11 9
 - 2026-09-01 | project | В UI добавлен экран `/admin/new-type` (форма создания типа) — требование курса, которого не было в скриншотах/плане | §9 шаг 2
 - 2026-09-01 | project | `input/` исключён из git через `.git/info/exclude` (не «чинить», не коммитить) | факт окружения
+- 2026-09-03 | project | Ревью 2026-09-03 (ветка docs/review-recommendations, коммит 1f0605d): рекомендации тремя приоритетами: P1 — мерж PR#21, lint-фронта не в CI, 2 e2e-сценария из плана не покрыты (протухшая вкладка, дата вне окна), USER node в Dockerfile, stale-сетка при смене typeId, нет таймаута в API-клиенте; P2 — contract-check не в CI, стаб vs бэк в кодах ошибок, плавающий node:24 в CI, NOW в проде, гонка без UNIQUE, prod-образ не собирается в CI, a11y формы, дрейф ручных зеркал типов; P3 — гигиена. Ограничения сознательные (rate-limit, авторизация, CORS, hexlet-check) | 1f0605d

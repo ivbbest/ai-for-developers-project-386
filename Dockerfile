@@ -22,6 +22,11 @@ ENV NODE_ENV=production \
     PORT=3000
 WORKDIR /app
 COPY --from=build /app ./
+# non-root: компрометация процесса не даёт контроль над контейнером; каталоги
+# записи (БД) — за node; volume-хост должен быть с uid 1000 (обычный пользователь Linux/WSL)
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3000
 # docker stop шлёт SIGTERM — server.ts закрывает listener и БД (graceful shutdown)
 STOPSIGNAL SIGTERM

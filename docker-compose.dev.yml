@@ -4,7 +4,7 @@
 # Использование: ./scripts/dev.sh <cmd…>  (или docker compose -f docker-compose.dev.yml run --rm dev <cmd…>)
 services:
   dev:
-    image: node:24
+    image: node:24.20.0
     working_dir: /workspace
     volumes:
       - .:/workspace

@@ -38,6 +38,7 @@ export function ConfirmPage() {
   }, []);
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     if (!typeId || !start) return;
@@ -92,6 +93,7 @@ export function ConfirmPage() {
     setSubmitting(true);
     setError(null);
     setConflict(false);
+    setExpired(false);
     try {
       const booking: Booking = await api.createBooking({
         eventTypeId: typeId,
@@ -112,6 +114,10 @@ export function ConfirmPage() {
           .getSlots(typeId, mskDay(start))
           .then((list) => aliveRef.current && setDaySlots(list))
           .catch(() => {});
+      } else if (err instanceof ApiError && err.code === 'slot_out_of_window') {
+        // E3: слот «протух» между выбором и подтверждением — путь назад к календарю
+        setError(err.message || 'Слот больше не доступен');
+        setExpired(true);
       } else if (err instanceof ApiError) {
         setError(err.message || 'Проверьте данные формы');
       } else {
@@ -147,6 +153,7 @@ export function ConfirmPage() {
           <CardContent>
             <form className="grid gap-4" onSubmit={submit}>
               <Input
+                aria-label="Имя"
                 placeholder="Имя"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -154,6 +161,7 @@ export function ConfirmPage() {
                 required
               />
               <Input
+                aria-label="Email"
                 type="email"
                 placeholder="Email"
                 value={email}
@@ -162,16 +170,22 @@ export function ConfirmPage() {
                 required
               />
               <Input
+                aria-label="Заметки"
                 placeholder="Заметки (необязательно)"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={2000}
               />
               {error && (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-destructive" role="alert">
                   {error}
-                  {conflict && (
-                    <Link className="ml-2 underline" to={`/book/${typeId}?date=${dayParam}`}>
+                  {(conflict || expired) && (
+                    // expired — слот протух через полночь: вчерашняя дата ведёт
+                    // на пустую сетку, ссылка без ?date открывает сегодня
+                    <Link
+                      className="ml-2 underline"
+                      to={expired ? `/book/${typeId}` : `/book/${typeId}?date=${dayParam}`}
+                    >
                       Обновить слоты
                     </Link>
                   )}

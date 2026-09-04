@@ -181,6 +181,18 @@
 - [x] Статусные шапки: project-understanding (реализовано полностью), api-contract
       (сверка через prism-proxy), deploy-global (вариант A реализован)
 
+### Ревью 2026-09-03 (ветка `docs/review-recommendations`)
+
+- [x] Два независимых ревью (recommendations + deep-analysis) объединены и сверены
+      с кодом; документ `docs/review-recommendations.md` — финальный; 7 ложных
+      тревог сняты, осознанные ограничения отделены от находок
+- [x] Подтверждённые P1/P2 исправлены в ветке: union `server_error`, коды стаба
+      (E3/404/зона), сброс стейта при смене типа, expired-ветка + a11y на confirm,
+      таймаут клиента, NOW-warn, `USER node` (образ перепроверен), CI:
+      contract-check + lint фронта + пины node + docker-build-smoke (`1ad1b3c..dfa2b5d`)
+- [ ] Остаток по документу: e2e-доводка (2 сценария), email-длина (решение
+      владельца), P3-полировка
+
 ### Стек проекта (финализирован 2026-09-01: ревью + аудит, `architecture-audit.md` (архив: `.agents/archive/`); см. `docs/project-understanding.md` §5/§11)
 - Фронт: TypeScript + Vite + React + shadcn/ui; мок разработки — стаб контракта
   (Prism — smoke по схеме и proxy-валидация).
