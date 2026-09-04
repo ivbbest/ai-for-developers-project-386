@@ -207,3 +207,16 @@
   контейнер `node:24`** (решение §11 7); Docker 29.x доступен нативно.
 - Отклонено (финально): Fastify (взяли Express), Mantine (взяли shadcn/ui),
   TanStack Query (тонкий fetch-клиент); Prism как мок этапа 2 (взяли стаб контракта).
+
+### Ревью 2026-09-04, раунд 2 — ветка `docs/review-recommendations-2` (только документ, код не тронут)
+
+- [x] Три независимых прохода (бэк; фронт; контракт + e2e + CI/CD + docs) + перепроверка
+      чтением/пробами/фактическими прогонами; документ `docs/review-recommendations-2.md`
+- [ ] Взять в работу: P2×4 — Express 4xx→500 (`errors.ts`), `aliveRef`/StrictMode (рефреш 409
+      в dev), e2e-очистка БД до старта webServer, decision-guide (`USER node` устарел)
+- [ ] Пакет P3: строгость zod↔yaml (eventTypeId, trim-before-max, root-issue RU-текст, 413/CT,
+      предикат /api), notes в стабе, non-root-ассерт в docker.yml, trace-artifact в e2e.yml,
+      SHA-пины экшенов, .dockerignore (корневой файл правил, вложенные файлы окружения),
+      фронтовые гонки/a11y, отставание доков
+- [ ] Остаток раунда 1 (статус-чек в документе): e2e-доводка, email-длина (решение владельца),
+      подтверждение USER node на Render (владелец)

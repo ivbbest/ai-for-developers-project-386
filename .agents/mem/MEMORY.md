@@ -43,6 +43,7 @@
 - 2026-09-03 | project | **Все этапы 1–5 плана выполнены**: контракт, фронт, бэк, e2e+CI, Docker, релиз v1.0.0, демо на Render (cal-com-97sr.onrender.com). Наблюдения: USER node в образе (free-тариф работает от root — решать при смене площадки/тарифа), IP-фронт Render может быть недоступен из рабочей сети — публичные проверки за браузером владельца | work-plan
 - 2026-09-03 | project | Ветка `docs/review-recommendations` — единый проверенный документ двух ревью + фиксы P1/P2 (union, стаб-коды, стейт-сброс, expired-ветка, a11y, таймаут, NOW-warn, USER node, CI-гигиена); остаток: e2e-доводка, email-длина, P3 | 1ad1b3c..dfa2b5d
 - 2026-09-04 | project | **PR #22 влит (34f87c2)**: ревью-документ + фиксы, 4 раунда ревью-бота отработаны (2 коммита фиксов, косметика отбита с причинами); на main после мержа 5/5 прогонов зелёные; остаток: e2e-доводка, email-длина, P3 | 34f87c2
+- 2026-09-04 | project | **Ревью-раунд 2**: `docs/review-recommendations-2.md` (ветка docs/review-recommendations-2) — 4 P2 (Express 4xx→500; aliveRef/StrictMode — рефреш 409 мёртв в dev; e2e-cleanup после старта webServer; decision-guide про root-контейнер устарел), пакет P3, статус-чек остатка раунда 1; код не менялся | 687db8f
 
 ## reference
 - 2026-09-03 | reference | docs/decision-guide.md — точка входа для аудита/ревью: контекст+решения+аудит-след; выполненные planning-доки — docs/archive/ | ветка docs/decision-guide
