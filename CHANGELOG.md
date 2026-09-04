@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2](https://github.com/ivbbest/ai-for-developers-project-386/compare/cal-com-v1.0.1...cal-com-v1.0.2) (2026-09-04)
+
+
+### Bug Fixes
+
+* **backend:** map Express 4xx to validation JSON, tighten contract strictness ([bfc5330](https://github.com/ivbbest/ai-for-developers-project-386/commit/bfc533082d1e19f1491515576ce40eb0358e1dfc))
+* **frontend:** repair StrictMode-dead auto-refresh and latent races ([a764296](https://github.com/ivbbest/ai-for-developers-project-386/commit/a76429639cc31b87c91ab661ed672d7221427041))
+* **mock-server,frontend:** close review-found divergences in stub and slots error state ([519f5d1](https://github.com/ivbbest/ai-for-developers-project-386/commit/519f5d1762d5d9efa2a009c41da85e3d0e16cc61))
+
 ## [1.0.1](https://github.com/ivbbest/ai-for-developers-project-386/compare/cal-com-v1.0.0...cal-com-v1.0.1) (2026-09-04)
 
 
