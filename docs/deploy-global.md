@@ -72,15 +72,27 @@ cal.example.ru {
     reverse_proxy localhost:3000
 }
 ```
-Caddy сам получает и продлевает сертификат Let's Encrypt. Проверка: `https://…`
-открывает UI, в браузере замок; e2e-сценарий брони по публичному URL проходит.
+Caddy сам получает и продлевает сертификат Let's Encrypt. Проверка: `https://…`
+открывает UI, в браузере замок; полное бронирование проходит вручную. Playwright-набор
+на публичном URL «из коробки» не гоняется: `baseURL` в `e2e/playwright.config.ts` —
+`localhost:5173`, прогон вовне требует правки конфига (baseURL + webServer).
 
 ### 6. Эксплуатация
 - Обновление: `git pull && docker compose up -d --build`.
+- Откат: релизы помечены тегами release-please (`v1.0.x`) —
+  `git checkout v1.0.<prev> && docker compose up -d --build`; данные в volume
+  не трогаются. На Render — через дашборд (выбор предыдущего commit/релиза,
+  образ пересобирается из репозитория).
+- Переменные образа (только имена; значения — на площадке): `PORT` — обязательна,
+  без неё сервер падает с внятной ошибкой; `DATABASE_PATH` — путь БД (по умолчанию
+  `backend/data/app.db`, на VPS попадает в volume); `STATIC_DIR` — каталог сборки
+  фронта (по умолчанию `frontend/dist` рядом); `NODE_ENV` — в образе `production`;
+  `NOW` — фиксация часов, только тесты/смоуки. `VITE_API_TARGET` — dev-прокси
+  фронта, в прод-образе не участвует.
 - Бэкап данных: cron `sqlite3 ~/cal-com/data/app.db ".backup /backup/app-$(date +%F).db"` +
   ротация; копия хотя бы вне машины (object storage/rsync).
 - Логи: `docker compose logs -f app`; рестарт сервиса после перезагрузки VPS —
-  `restart: unless-stopped` в compose.
+  `restart: unless-stopped` в compose.
 
 ## Чек-лист приёмки «глобального» запуска
 
