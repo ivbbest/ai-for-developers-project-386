@@ -28,8 +28,13 @@ export function apiErrorHandler(err: unknown, _req: Request, res: Response, next
       return send(res, 400, 'validation', `Неизвестные поля: ${keys.join(', ')}`);
     }
     const first = err.issues[0];
-    const field = first?.path.join('.') ?? 'тело';
-    return send(res, 400, 'validation', `Поле «${field}»: ${first?.message ?? 'некорректно'}`);
+    // Root-issue (скаляр/массив вместо объекта): path пуст, join даёт ''
+    // («Поле «»»), а сообщение zod — английское; отдельная ветка с RU-текстом (C7)
+    if (!first || first.path.length === 0) {
+      return send(res, 400, 'validation', 'Ожидался объект в теле запроса');
+    }
+    const field = first.path.join('.');
+    return send(res, 400, 'validation', `Поле «${field}»: ${first.message}`);
   }
   if (err instanceof InvalidDateError) {
     return send(res, 400, 'validation', err.message);
@@ -47,6 +52,16 @@ export function apiErrorHandler(err: unknown, _req: Request, res: Response, next
   }
   if (type === 'entity.parse.failed') {
     return send(res, 400, 'validation', 'Ожидался валидный JSON'); // E9
+  }
+  // Ошибки самого Express с клиентским status: URIError 400 на битый
+  // percent-encoding в пути (router/lib/layer.js навешивает status=400, но НЕ
+  // expose), SyntaxError 400 от qs. Без ветки проваливаются в generic-500,
+  // загрязняя мониторинг 5xx мусорным трафиком (E19: 5xx — только сбои сервера)
+  // и расходясь со стабом/Prism. HttpError и body-parser перехвачены выше.
+  // Сообщение фиксированное RU — текст ошибки (может содержать фрагмент пути) наружу не идёт.
+  const status = (err as { status?: number })?.status;
+  if (typeof status === 'number' && status >= 400 && status < 500) {
+    return send(res, 400, 'validation', 'Некорректный запрос'); // E18
   }
 
   console.error('Unhandled error:', err);

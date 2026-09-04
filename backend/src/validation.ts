@@ -9,26 +9,31 @@ const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export const bookingCreateSchema = z
   .object({
-    eventTypeId: z.string('Ожидается строка'),
+    // EventTypeId из контракта: без паттерна «MEET_15» доживал до поиска и
+    // давал 404 not_found, тогда как контракт/Prism — 400 validation
+    eventTypeId: z.string('Ожидается строка').regex(ID_PATTERN, 'только строчные a-z, цифры, дефис; 1–40 символов'),
     // формат/сетка — после проверки типа (E6: «тип раньше валидации start»),
     // поэтому здесь только строка; зону и сетку требует validateBookingStart
     start: z.string('Ожидается строка'),
-    name: z.string('Ожидается строка').trim().min(1, 'нельзя пусто').max(120, 'максимум 120 символов'),
+    // max ДО trim: maxLength контракта ограничивает строку как она пришла в
+    // JSON; после trim «124 символа с пробелами» пролезало в поле «до 120»
+    name: z.string('Ожидается строка').max(120, 'максимум 120 символов').trim().min(1, 'нельзя пусто'),
     email: z
       .string('Ожидается строка')
+      .max(254, 'слишком длинный')
       .trim()
       .min(1, 'нельзя пусто')
-      .max(254, 'слишком длинный')
       .regex(EMAIL_PATTERN, { error: 'некорректный адрес' }),
-    notes: z.string('Ожидается строка').trim().min(1, 'пустые заметки не нужны').max(2000, 'максимум 2000 символов').optional(),
+    notes: z.string('Ожидается строка').max(2000, 'максимум 2000 символов').trim().min(1, 'пустые заметки не нужны').optional(),
   })
   .strict();
 
 export const eventTypeCreateSchema = z
   .object({
     id: z.string('Ожидается строка').regex(ID_PATTERN, 'только строчные a-z, цифры, дефис; 1–40 символов'),
-    title: z.string('Ожидается строка').trim().min(1, 'нельзя пусто').max(80, 'максимум 80 символов'),
-    description: z.string('Ожидается строка').trim().max(500, 'максимум 500 символов').optional(),
+    // max ДО trim — та же трактовка maxLength, что в bookingCreateSchema
+    title: z.string('Ожидается строка').max(80, 'максимум 80 символов').trim().min(1, 'нельзя пусто'),
+    description: z.string('Ожидается строка').max(500, 'максимум 500 символов').trim().optional(),
     durationMinutes: z
       .number('Ожидается число')
       .int('целое число')

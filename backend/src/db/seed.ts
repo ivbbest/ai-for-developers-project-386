@@ -13,6 +13,6 @@ export const SEED_EVENT_TYPES: EventType[] = [
 
 export function seed(db: Db): void {
   for (const et of SEED_EVENT_TYPES) {
-    insertEventType(db, et, { ignore: true });
+    insertEventType(db, et);
   }
 }

@@ -31,16 +31,15 @@ export function getEventType(db: Db, id: string): EventType | undefined {
   return row ? toEventType(row) : undefined;
 }
 
-// ignore=true — идемпотентный seed; false — обычный вставочный путь (POST /event-types, 3.4).
-// Возвращает число вставленных строк: 0 при ignore-дубле нужен маршруту для 409 duplicate_id.
-// ON CONFLICT(id) DO NOTHING вместо INSERT OR IGNORE: игнорируется ровно коллизия PK,
-// любые другие нарушения (NOT NULL и т. п.) остаются ошибками.
+// Всегда ON CONFLICT(id) DO NOTHING: и идемпотентный seed, и 409 duplicate_id
+// в POST используют один механизм — changes===0 при коллизии PK. Отдельная
+// plain-ветка без DO NOTHING в проде не вызывалась никогда (мёртвый код удалён
+// по ревью); другие нарушения (NOT NULL, CHECK) бросаются в обеих схемах.
 const INSERT_SQL = `INSERT INTO event_types (id, title, description, duration_minutes)
-     VALUES (@id, @title, @description, @durationMinutes)`;
-const INSERT_IGNORE_SQL = `${INSERT_SQL} ON CONFLICT(id) DO NOTHING`;
+     VALUES (@id, @title, @description, @durationMinutes) ON CONFLICT(id) DO NOTHING`;
 
-export function insertEventType(db: Db, et: EventType, opts: { ignore?: boolean } = {}): number {
-  const info = db.prepare(opts.ignore ? INSERT_IGNORE_SQL : INSERT_SQL).run({
+export function insertEventType(db: Db, et: EventType): number {
+  const info = db.prepare(INSERT_SQL).run({
     id: et.id,
     title: et.title,
     description: et.description ?? null,

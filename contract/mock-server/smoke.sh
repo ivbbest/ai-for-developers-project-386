@@ -91,6 +91,8 @@ check_body "кривой JSON — validation" '"validation"'
 check "booking неизвестное поле → 400 (E8)" 400 -H 'Content-Type: application/json' -d "{\"eventTypeId\":\"meet-15\",\"start\":\"$FIRST_START\",\"name\":\"Г\",\"email\":\"g@example.com\",\"end\":\"2026-01-01T07:00:00.000Z\"}" "$BASE/bookings"
 check "booking start вне сетки (07:07) → 400 (E7)" 400 -H 'Content-Type: application/json' -d "{\"eventTypeId\":\"meet-15\",\"start\":\"${TOMORROW}T04:07:00.000Z\",\"name\":\"Г\",\"email\":\"g@example.com\"}" "$BASE/bookings"
 check "booking start в прошлом → 400 (E3)" 400 -H 'Content-Type: application/json' -d '{"eventTypeId":"meet-15","start":"2020-01-02T06:00:00.000Z","name":"Г","email":"g@example.com"}' "$BASE/bookings"
+check "booking пустые notes → 400 (E10, как бэкенд)" 400 -H 'Content-Type: application/json' -d "{\"eventTypeId\":\"meet-15\",\"start\":\"$FIRST_START\",\"name\":\"Г\",\"email\":\"g@example.com\",\"notes\":\"\"}" "$BASE/bookings"
+check "booking eventTypeId вне паттерна → 400 (контракт, не 404)" 400 -H 'Content-Type: application/json' -d '{"eventTypeId":"MEET_15","start":"2026-01-01T06:00:00.000Z","name":"Г","email":"g@example.com"}' "$BASE/bookings"
 node -e 'const fs=require("fs");fs.writeFileSync("/tmp/big.json",JSON.stringify({eventTypeId:"meet-15",start:"2026-01-01T06:00:00.000Z",name:"Г",email:"g@example.com",notes:"x".repeat(70000)}))'
 check "booking тело >64KB → 413 (E18)" 413 -H 'Content-Type: application/json' --data-binary @/tmp/big.json "$BASE/bookings"
 check_body "413 payload_too_large" '"payload_too_large"'
