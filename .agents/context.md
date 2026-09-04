@@ -310,3 +310,15 @@
   ассерта в docker.yml, пины сторонних экшенов тегами, внутренний файл правил и вложенные
   файлы окружения в образе, гонки/a11y фронта, отставание доков) и статус-чек остатка раунда 1.
   Прогоны: backend 64/64, compile+diff чистый, смоуки 28/42, CI на main 5/5 зелёные. | 687db8f
+
+## 2026-09-04: ревью-раунд 2 реализован (та же ветка docs/review-recommendations-2)
+- Все 4 P2 + пакет P3 + остаток раунда 1 внесены; документ раунда удалён по факту. Бэкенд:
+  Express-4xx → 400 validation, zod-строгость (eventTypeId-паттерн, max-до-trim, root-issue RU,
+  413 на любом POST, сегментный /api-предикат, x-powered-by), мёртвая plain-ветка INSERT удалена.
+  Стаб: зеркалирует порядок бэка + raw-длины + encoding.unsupported (смоук 46). Фронт: aliveRef
+  (StrictMode), slotsError-состояние, reqSeq-гонка, a11y/empty-state/Textarea/preview-proxy,
+  exhaustive-deps. e2e: очистка БД в command webServer (воспроизведено 2 прогонами в контейнере),
+  ассерт авто-рефреша, 2 обещанных сценария, де-хардкоды. CI: non-root-ассерт, trace-artifact,
+  SHA-пины, .dockerignore. Прогоны: backend 71/71, смоуки 28/46, contract-check OK, e2e 8/8×2,
+  docker-smoke локально зелёный, фронт 6 warn ≤ базы. Независимое ревью диффа нашло 2 дефекта
+  (raw-длины в стабе event-types, залипающий slotsError) — исправлены 519f5d1. | bfc5330..519f5d1
