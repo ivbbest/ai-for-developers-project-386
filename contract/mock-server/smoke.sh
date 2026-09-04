@@ -53,6 +53,7 @@ check_body "слоты доступны" '"available"'
 FIRST_START=$(node -e "const j=require('fs').readFileSync('$BODY','utf8');console.log(JSON.parse(j)[0].start)")
 
 # основной сценарий: бронь → booked → повтор 409
+T80=$(printf 'a%.0s' $(seq 1 80))
 BOOK="{\"eventTypeId\":\"meet-15\",\"start\":\"$FIRST_START\",\"name\":\"Гость Смоук\",\"email\":\"smoke@example.com\"}"
 check "POST booking → 201" 201 -H 'Content-Type: application/json' -d "$BOOK" "$BASE/bookings"
 check_body "бронь с id/createdAt" '"createdAt"'
@@ -98,6 +99,8 @@ check "booking тело >64KB → 413 (E18)" 413 -H 'Content-Type: application/j
 check_body "413 payload_too_large" '"payload_too_large"'
 check "тип duration=7 → 400" 400 -H 'Content-Type: application/json' -d '{"id":"x-7","title":"x","durationMinutes":7}' "$BASE/event-types"
 check "тип id вне паттерна → 400" 400 -H 'Content-Type: application/json' -d '{"id":"X_7","title":"x","durationMinutes":15}' "$BASE/event-types"
+check "тип id с пробелами по краям → 400 (паттерн по сырой строке, как бэк)" 400 -H 'Content-Type: application/json' -d '{"id":" x-ok ","title":"x","durationMinutes":15}' "$BASE/event-types"
+check "тип title 80+пробелы → 400 (maxLength до trim, как бэк)" 400 -H 'Content-Type: application/json' -d "{\"id\":\"x-raw\",\"title\":\"${T80}    \",\"durationMinutes\":15}" "$BASE/event-types"
 check "тип неизвестное поле → 400 (E8)" 400 -H 'Content-Type: application/json' -d '{"id":"x-ok","title":"x","durationMinutes":15,"extra":true}' "$BASE/event-types"
 check "неизвестный /api/* → 404 Error" 404 "$BASE/nope"
 check_body "not_found формат" '"not_found"'

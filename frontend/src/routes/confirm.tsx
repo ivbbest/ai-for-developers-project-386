@@ -63,8 +63,17 @@ export function ConfirmPage() {
       })
       .catch(() => !cancelled && setLoadError('Не удалось загрузить данные'));
     // счётчик «Свободно» — как в референсе; сетку дня перезапрашиваем — она же
-    // источник актуальности после 409
-    api.getSlots(typeId, mskDay(start)).then((s) => !cancelled && setDaySlots(s)).catch(() => !cancelled && setSlotsError(true));
+    // источник актуальности после 409; успех снимает slotsError (StrictMode:
+    // первый fetch мог упасть, второй — подняться на том же инстансе)
+    api
+      .getSlots(typeId, mskDay(start))
+      .then((s) => {
+        if (!cancelled) {
+          setDaySlots(s);
+          setSlotsError(false);
+        }
+      })
+      .catch(() => !cancelled && setSlotsError(true));
     return () => {
       cancelled = true;
     };
