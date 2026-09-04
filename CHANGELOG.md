@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.1](https://github.com/ivbbest/ai-for-developers-project-386/compare/cal-com-v1.0.0...cal-com-v1.0.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* 15s timeout on every API request ([0c02a63](https://github.com/ivbbest/ai-for-developers-project-386/commit/0c02a6398d92a10cece4be9c3971769e5b0b9599))
+* add server_error to the client error union ([ec2b452](https://github.com/ivbbest/ai-for-developers-project-386/commit/ec2b452dc7f3c8338a21e8f2fc93d62b110701e6))
+* distinguish expired slots on confirm; accessible form fields ([710a383](https://github.com/ivbbest/ai-for-developers-project-386/commit/710a3831fc8041c5de5a89ef009d01b024a0b5ff))
+* first review round on the consolidated review PR ([ab77ffd](https://github.com/ivbbest/ai-for-developers-project-386/commit/ab77ffdf186742ca4323a827c68bedba8909fc58))
+* reset slot-page state when the event type changes ([1ad1b3c](https://github.com/ivbbest/ai-for-developers-project-386/commit/1ad1b3cd40a6b96a420d4fb618e71663ff6eb4ef))
+* second review round on the consolidated review PR ([f7c7dc8](https://github.com/ivbbest/ai-for-developers-project-386/commit/f7c7dc8dbf659d48f391f59748291efb15cbc092))
+* stub error semantics aligned with the backend ([0815ada](https://github.com/ivbbest/ai-for-developers-project-386/commit/0815ada226a0c1e11203d3afa2dc53d3c77524a8))
+* third review round on the consolidated review PR ([a5de0fb](https://github.com/ivbbest/ai-for-developers-project-386/commit/a5de0fb0a814e2b99ea9584cdebaa7f0ae36779d))
+
 ## 1.0.0 (2026-09-03)
 
 
