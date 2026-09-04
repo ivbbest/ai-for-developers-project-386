@@ -5,6 +5,7 @@ import { ApiError, type Booking, type EventType, type Slot } from '../api/types'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { InfoBox } from '../components/info-box';
 import { formatDayLongMsk, formatTimeMsk, mskDay } from '../lib/time';
 
@@ -31,10 +32,19 @@ export function ConfirmPage() {
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  // рефетч из catch не в эффекте — флаг живости компонента через ref
+  // ошибка загрузки слотов ≠ «день занят»: «Свободно: 0» при сетке, которая
+  // не поднялась, вводит в заблуждение
+  const [slotsError, setSlotsError] = useState(false);
+  // рефетч из catch не в эффекте — флаг живости компонента через ref;
+  // StrictMode делает setup→cleanup→setup на том же инстансе: без
+  // взведения в setup флаг оставался false в dev, и авто-рефреш после
+  // 409 молча отбрасывал результат
   const aliveRef = useRef(true);
-  useEffect(() => () => {
-    aliveRef.current = false;
+  useEffect(() => {
+    aliveRef.current = true;
+    return () => {
+      aliveRef.current = false;
+    };
   }, []);
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
@@ -53,8 +63,17 @@ export function ConfirmPage() {
       })
       .catch(() => !cancelled && setLoadError('Не удалось загрузить данные'));
     // счётчик «Свободно» — как в референсе; сетку дня перезапрашиваем — она же
-    // источник актуальности после 409
-    api.getSlots(typeId, mskDay(start)).then((s) => !cancelled && setDaySlots(s)).catch(() => !cancelled && setDaySlots([]));
+    // источник актуальности после 409; успех снимает slotsError (StrictMode:
+    // первый fetch мог упасть, второй — подняться на том же инстансе)
+    api
+      .getSlots(typeId, mskDay(start))
+      .then((s) => {
+        if (!cancelled) {
+          setDaySlots(s);
+          setSlotsError(false);
+        }
+      })
+      .catch(() => !cancelled && setSlotsError(true));
     return () => {
       cancelled = true;
     };
@@ -112,7 +131,12 @@ export function ConfirmPage() {
         // виден после «Обновить слоты»)
         api
           .getSlots(typeId, mskDay(start))
-          .then((list) => aliveRef.current && setDaySlots(list))
+          .then((list) => {
+            if (aliveRef.current) {
+              setDaySlots(list);
+              setSlotsError(false);
+            }
+          })
           .catch(() => {});
       } else if (err instanceof ApiError && err.code === 'slot_out_of_window') {
         // E3: слот «протух» между выбором и подтверждением — путь назад к календарю
@@ -139,7 +163,7 @@ export function ConfirmPage() {
           <CardContent className="grid gap-3">
             <InfoBox label="Выбранная дата" value={formatDayLongMsk(start)} />
             <InfoBox label="Выбранное время" value={endIso ? `${formatTimeMsk(start)} - ${formatTimeMsk(endIso)}` : '…'} />
-            <InfoBox label="Свободно" value={freeCount === undefined ? '…' : String(freeCount)} />
+            <InfoBox label="Свободно" value={slotsError ? 'не загрузилось' : freeCount === undefined ? '…' : String(freeCount)} />
             <InfoBox label="Длительности в дне" value={type ? `${type.durationMinutes} мин` : '…'} />
           </CardContent>
         </Card>
@@ -169,12 +193,13 @@ export function ConfirmPage() {
                 maxLength={254}
                 required
               />
-              <Input
+              <Textarea
                 aria-label="Заметки"
                 placeholder="Заметки (необязательно)"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={2000}
+                rows={3}
               />
               {error && (
                 <p className="text-sm text-destructive" role="alert">

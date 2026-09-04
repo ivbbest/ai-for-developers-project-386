@@ -28,20 +28,16 @@ export function eventTypesRouter(db: Db, nowFn: NowFn = now): Router {
   });
 
   // POST /api/event-types (3.4): id задаёт владелец (C5), занятый id — 409 (E13).
-  // INSERT OR IGNORE + changes==0 — детект дубля без гонки: проверка и вставка
-  // одним оператором.
+  // ON CONFLICT(id) DO NOTHING + changes==0 — детект дубля без гонки: проверка
+  // и вставка одним оператором.
   router.post('/', (req, res) => {
     const body = eventTypeCreateSchema.parse(req.body);
-    const changes = insertEventType(
-      db,
-      {
-        id: body.id,
-        title: body.title,
-        ...(body.description !== undefined ? { description: body.description } : {}),
-        durationMinutes: body.durationMinutes,
-      },
-      { ignore: true },
-    );
+    const changes = insertEventType(db, {
+      id: body.id,
+      title: body.title,
+      ...(body.description !== undefined ? { description: body.description } : {}),
+      durationMinutes: body.durationMinutes,
+    });
     if (changes === 0) {
       throw new HttpError(409, 'duplicate_id', `id уже занят: ${body.id}`);
     }

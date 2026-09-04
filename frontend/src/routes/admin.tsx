@@ -10,6 +10,7 @@ import { formatCreatedMsk, formatSlotMsk } from '../lib/time';
 export function AdminPage() {
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,7 +21,7 @@ export function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reload]);
 
   return (
     <div>
@@ -30,7 +31,14 @@ export function AdminPage() {
           <Link to="/admin/new-type">Новый тип события</Link>
         </Button>
       </div>
-      {error && <p className="text-destructive">{error}</p>}
+      {error && (
+        <p className="text-destructive" role="alert">
+          {error}{' '}
+          <button type="button" className="underline" onClick={() => { setError(null); setReload((n) => n + 1); }}>
+            Повторить
+          </button>
+        </p>
+      )}
       {bookings === null && !error && <Skeleton className="h-32" />}
       {bookings !== null && bookings.length === 0 && (
         <p className="text-muted-foreground">Пока нет запланированных встреч</p>

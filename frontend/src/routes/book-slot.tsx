@@ -27,9 +27,11 @@ export function BookSlotPage() {
   const [selected, setSelected] = useState<Slot | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Граница «сегодня» считается по поясу сервиса (mskDay), но ХРАНИТСЯ как
-  // локальная полночь: ячейки react-day-picker и toIsoDay() тоже локальные —
-  // сравнения и round-trip самосогласованы в любом поясе браузера
+  // Граница «сегодня» — MSK-календарная дата (сервис живёт по Europe/Moscow),
+  // но хранится как локальная полночь: ячейки react-day-picker и toIsoDay()
+  // тоже локальные, поэтому сравнения и round-trip в строки самосогласованы.
+  // В крайних поясах локальное «сегодня» гостя может отличаться от MSK-даты
+  // на ±1 — это осознанно: окно задаёт сервер по MSK, сетка заякорена на него же
   const today = useMemo(() => new Date(`${mskDay(new Date().toISOString())}T00:00:00`), []);
   const lastDay = useMemo(() => {
     const d = new Date(today);
@@ -47,6 +49,10 @@ export function BookSlotPage() {
     setSlots(null);
     setSelected(null);
     setLoadError(null);
+    // in-flight ответ прежнего типа не должен пройти seq-проверку в loadSlots
+    // и затереть сетку нового (сейчас безвредно из-за гейта day===null —
+    // не держать рваную гонку «на честном слове»)
+    reqSeq.current += 1;
   }, [typeId]);
 
   useEffect(() => {
@@ -86,13 +92,15 @@ export function BookSlotPage() {
       });
   }, [typeId]);
 
-  // возврат из /confirm («Изменить», «Обновить слоты») — на тот же день
+  // возврат из /confirm («Изменить», «Обновить слоты») — на тот же день;
+  // searchParams в deps: identity меняется только вместе с location,
+  // повторных загрузок нет (type/loadSlots стабильны после первой)
   useEffect(() => {
     const date = searchParams.get('date');
     if (type && date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
       loadSlots(new Date(`${date}T00:00:00`));
     }
-  }, [type, loadSlots]);
+  }, [type, loadSlots, searchParams]);
 
   if (loadError && type === null) return <p className="text-destructive">{loadError}</p>;
   if (type === null) return <Skeleton className="h-40" />;
@@ -151,7 +159,7 @@ export function BookSlotPage() {
           </CardHeader>
           <CardContent>
             {day !== null && slots === null && <Skeleton className="h-40" />}
-            {day !== null && slots !== null && slots.length === 0 && (
+            {day !== null && slots !== null && slots.length === 0 && !loadError && (
               <p className="text-sm text-muted-foreground">Нет слотов на этот день</p>
             )}
             {day !== null && slots !== null && slots.length > 0 && (
@@ -182,7 +190,7 @@ export function BookSlotPage() {
                 ))}
               </div>
             )}
-            {loadError && day !== null && <p className="mt-2 text-sm text-destructive">{loadError}</p>}
+            {loadError && day !== null && <p className="mt-2 text-sm text-destructive" role="alert">{loadError}</p>}
             <div className="mt-4 flex gap-2">
               <Button variant="outline" asChild className="flex-1">
                 <Link to="/book">Назад</Link>
@@ -194,9 +202,8 @@ export function BookSlotPage() {
                   typeId &&
                   selected &&
                   navigate(
-                  `/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}&end=${encodeURIComponent(selected.end)}`,
-                )
-
+                    `/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}&end=${encodeURIComponent(selected.end)}`,
+                  )
                 }
               >
                 Продолжить

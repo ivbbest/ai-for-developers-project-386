@@ -114,8 +114,8 @@ Frontend и Backend реализуются раздельно, связь — �
 
 ### e2e + релизы
 - **Playwright** — браузерные сценарии бронирования.
-- **Conventional Commits** + **release-please-action** v4 (Release-PR, CHANGELOG, SemVer).
-- CI — **GitHub Actions** (Playwright на `mcr.microsoft.com/playwright:*`; hexlet-check не трогаем).
+- **Conventional Commits** + **release-please-action** v5 (Release-PR, CHANGELOG, SemVer).
+- CI — **GitHub Actions** (e2e на `node:24` + `playwright install`, не на mcr-образе — см. `e2e.yml`; hexlet-check не трогаем).
 - **MCP** (опционально): Playwright MCP, Chrome DevTools MCP.
 
 ### Деплой
@@ -257,7 +257,7 @@ Frontend и Backend реализуются раздельно, связь — �
      `backend` (`e2e/` — отдельно, решения 3–4; шаг 1.3 плана, аудит F2).
    - Пакеты: `@typespec/compiler`, `@typespec/http`, `@typespec/openapi3`, `@typespec/rest`
      — **версии пинить**; эмиттер openapi3 по умолчанию пишет JSON — в `tspconfig.yaml`
-     задать `output-file-type: yaml` (иначе `dist/openapi.yaml` не появится).
+     задать `file-type: yaml` + `output-file: openapi.yaml` (иначе `dist/openapi.yaml` не появится).
 4. **Описание сущностей** (`model`):
    - `EventType { id, title, description?, durationMinutes }` (id читаемый, паттерн)
    - `Slot { start: utcDateTime, end: utcDateTime, status: "available" | "booked" }`
@@ -362,11 +362,12 @@ Frontend и Backend реализуются раздельно, связь — �
    Проверки: слот стал «Занято», повторная запись на то же время — ошибка.
 3. **MCP для отладки**: Playwright MCP (`npx @playwright/mcp`) — прокидка/воспроизведение
    сценария; Chrome DevTools MCP — разбор сети/консоли при падениях.
-4. **CI (GitHub Actions)**: workflow `e2e.yml` на push/PR: образы
-   `mcr.microsoft.com/playwright:*`, установка, сборка, `npx playwright test`.
+4. **CI (GitHub Actions)**: workflow `e2e.yml` на push/PR: образ `node:24` +
+   `playwright install --with-deps chromium` (не mcr.playwright: runner'у проекта
+   недоступен CDN, prebuild better-sqlite3 не тянется — обоснование в `e2e.yml`), сборка, `npx playwright test`.
 5. **Conventional Commits**: договорённость (типы feat/fix/docs/ci/refactor/test);
-   фиксация в AGENTS.md; агент пишет коммиты в этом формате в рабочие ветки.
-6. **release-please**: workflow `release-please.yml` (`googleapis/release-please-action@v4`,
+   фиксация в AGENTS.md; агент пишет коммиты в этом формате в рабочие ветки.
+6. **release-please**: workflow `release-please.yml` (`googleapis/release-please-action@v5`,
    `release-type: node|simple`); после мёржа в main — Release-PR/CHANGELOG/SemVer.
 7. **Проверка**: e2e зелёный локально; workflow-файлы валидны (YAML/структура);
    dry-прогон release-please на коммитах.
@@ -378,7 +379,9 @@ Frontend и Backend реализуются раздельно, связь — �
 **Подзадачи:**
 1. **Dockerfile** (multi-stage, Node):
    - stage build: сборка фронта (`vite build`) и бэка (`tsc`);
-   - stage prod: копирование артефактов, `ENV PORT=3000`, `EXPOSE ${PORT}`,
+   - stage prod: копирование артефактов, `ENV PORT=3000`, `EXPOSE 3000`
+     (фиксированный: `PORT` читается приложением из env, а `EXPOSE` — только
+     документация образа),
      `CMD` запускает **единое приложение** — бэк, раздающий API + `frontend/dist`
      по `process.env.PORT` (не два процесса); сборка/проверка — в Linux-окружении (§5).
 2. **Локальная проверка**: `docker build -t cal-com .`; `docker run -p $PORT:$PORT -e PORT=...`;
@@ -453,8 +456,7 @@ cal-com/
 │   │   ├── server.ts              # запуск по process.env.PORT
 │   │   ├── app.ts                 # Express, роуты
 │   │   ├── routes/
-│   │   │   ├── event-types.ts
-│   │   │   ├── slots.ts
+│   │   │   ├── eventTypes.ts        # + GET /:id/slots внутри (слоты — свойство типа)
 │   │   │   └── bookings.ts
 │   │   ├── services/
 │   │   │   └── slots.ts           # окно 14 дней, занятость

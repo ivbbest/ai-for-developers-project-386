@@ -201,6 +201,22 @@ describe('POST /api/bookings (3.3)', () => {
     expect(res.body.code).toBe('not_found');
   });
 
+  it('P3: eventTypeId вне паттерна контракта — 400 validation, а не 404', async () => {
+    // «MEET_15»: контракт (EventTypeId pattern) и Prism дают 400; бэк до
+    // фикса пропускал строку к поиску и отвечал 404 not_found
+    const res = await request(api).post('/api/bookings').send(booking({ eventTypeId: 'MEET_15' }));
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('validation');
+  });
+
+  it('P3: maxLength считается по сырой строке (до trim)', async () => {
+    // 120 букв + 4 пробела: после trim ровно 120, но контракт ограничивает
+    // строку как она пришла в JSON — 400 (подтверждено пробой на zod 4.5.4)
+    const res = await request(api).post('/api/bookings').send(booking({ name: `${'а'.repeat(120)}    ` }));
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('validation');
+  });
+
   it('кривой start (не парсится) → 400 validation', async () => {
     const res = await request(api).post('/api/bookings').send(booking({ start: 'вчера' }));
     expect(res.status).toBe(400);
@@ -269,6 +285,15 @@ describe('POST /api/event-types (3.4)', () => {
     const res = await request(api).post('/api/event-types').send(type({ id: 'meet-15', title: 'Дубль' }));
     expect(res.status).toBe(409);
     expect(res.body.code).toBe('duplicate_id');
+  });
+
+  it('P3: title/description maxLength по сырой строке (до trim) — как name в броне', async () => {
+    const title = await request(api).post('/api/event-types').send(type({ title: `${'а'.repeat(80)}   ` }));
+    expect(title.status).toBe(400);
+    expect(title.body.code).toBe('validation');
+    const desc = await request(api).post('/api/event-types').send(type({ description: `${'б'.repeat(500)}   ` }));
+    expect(desc.status).toBe(400);
+    expect(desc.body.code).toBe('validation');
   });
 
   it('E12: duration 545/0/13 → 400; 540 → 201 и один слот в день', async () => {
@@ -411,6 +436,13 @@ describe('3.5: раздача сборки фронта одним портом'
     expect(post.body.code).toBe('not_found');
   });
 
+  it('P3: /apixyz — не api-сегмент, получает index.html (предикат fallback = сегментный)', async () => {
+    // startsWith('/api') вырезал и этот путь: не было ни API-404, ни SPA-роутинга
+    const res = await request(api).get('/apixyz');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('cal-com');
+  });
+
   it('без каталога сборки (dev) — API-only, / не отдаётся', async () => {
     const only = createApp(makeDb(), { nowFn: NOW, staticDir: false });
     const res = await request(only).get('/');
@@ -429,5 +461,44 @@ describe('error handler: необработанное исключение', () 
     expect(res.status).toBe(500);
     expect(res.headers['content-type']).toMatch(/application\/json/);
     expect(res.body).toEqual({ code: 'server_error', message: 'Внутренняя ошибка сервера' });
+  });
+
+  it('P2-1: URIError Express (битый percent-encoding в пути) → 400 validation, не 500', async () => {
+    // %E0%A4%A — неполная UTF-8-последовательность, decodeURIComponent бросает
+    // URIError { status: 400, expose: true }; до фикса проваливался в generic-500
+    const api = createApp(makeDb(), { nowFn: NOW });
+    const res = await request(api).get('/api/event-types/%E0%A4%A/slots?date=2026-09-10');
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe('validation');
+    expect(res.headers['content-type']).toMatch(/application\/json/);
+  });
+
+  it('P3 (C7): не-объектный JSON body — RU-текст, не «Поле «»» с англ. сообщением', async () => {
+    const api = createApp(makeDb(), { nowFn: NOW });
+    // scalar root отсекает strict-режим body-parser (entity.parse.failed),
+    // array root доходит до zod как root-issue с пустым path
+    const scalar = await request(api).post('/api/bookings').set('Content-Type', 'application/json').send('"строка"');
+    expect(scalar.status).toBe(400);
+    expect(scalar.body.code).toBe('validation');
+    expect(scalar.body.message).toBe('Ожидался валидный JSON');
+    const array = await request(api).post('/api/bookings').set('Content-Type', 'application/json').send('[1,2]');
+    expect(array.status).toBe(400);
+    expect(array.body.message).toBe('Ожидался объект в теле запроса');
+  });
+
+  it('P3 (E18): 413 на любом POST, не только application/json', async () => {
+    const api = createApp(makeDb(), { nowFn: NOW });
+    const res = await request(api)
+      .post('/api/bookings')
+      .set('Content-Type', 'text/plain')
+      .send('x'.repeat(100_000));
+    expect(res.status).toBe(413);
+    expect(res.body.code).toBe('payload_too_large');
+  });
+
+  it('P3: x-powered-by не выдаётся (гигиена публичного прода)', async () => {
+    const api = createApp(makeDb(), { nowFn: NOW });
+    const res = await request(api).get('/api/event-types');
+    expect(res.headers['x-powered-by']).toBeUndefined();
   });
 });

@@ -58,6 +58,9 @@ app.use(express.json({ limit: '64kb' }));
 app.use((err, _req, res, next) => {
   if (err?.type === 'entity.too.large') return error(res, 413, 'payload_too_large', 'Тело запроса слишком большое');
   if (err?.type === 'entity.parse.failed') return error(res, 400, 'validation', 'Ожидался валидный JSON');
+  // charset=utf-16 и пр.: бэкенд маппит клиентские 4xx Express в 400 validation —
+  // без ветки стаб отдавал бы html-500 и расходился с бэком на том же входе
+  if (err?.type === 'encoding.unsupported') return error(res, 400, 'validation', 'Некорректный запрос');
   return next(err);
 });
 
@@ -94,19 +97,28 @@ app.get('/api/event-types/:id/slots', (req, res) => {
 app.post('/api/bookings', (req, res) => {
   const b = readBody(req, res, ['eventTypeId', 'start', 'name', 'email', 'notes']);
   if (b === null) return undefined;
+  // зеркало bookingCreateSchema: shape/pattern/длины — раньше поиска типа
+  // (длины по сырой строке, maxLength контракта считается до trim, E10)
+  const raw = req.body;
+  if (
+    typeof b.eventTypeId !== 'string' || !ID_PATTERN.test(raw.eventTypeId) ||
+    typeof b.start !== 'string' ||
+    typeof b.name !== 'string' || b.name === '' || raw.name.length > 120 ||
+    typeof b.email !== 'string' || raw.email.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.email) ||
+    (b.notes !== undefined && (typeof b.notes !== 'string' || b.notes === '' || raw.notes.length > 2000))
+  ) {
+    return error(res, 400, 'validation', 'name/email/start/notes не проходят валидацию контракта');
+  }
   const type = state.eventTypes.find((t) => t.id === b.eventTypeId);
   if (!type) return error(res, 404, 'not_found', `Тип события не найден: ${b.eventTypeId}`);
-  const startMs = typeof b.start === 'string' ? Date.parse(b.start) : Number.NaN;
+  const startMs = Date.parse(b.start);
   // зеркало backend validateBookingStart: зона обязательна, «в прошлом» (E3)
   // раньше «вне окна» (E5) с отдельным сообщением, сетка — validation
   if (
-    typeof b.start !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/.test(b.start) ||
-    Number.isNaN(startMs) ||
-    typeof b.name !== 'string' || b.name === '' || b.name.length > 120 ||
-    typeof b.email !== 'string' || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.email) ||
-    (b.notes !== undefined && (typeof b.notes !== 'string' || b.notes.length > 2000))
+    !/(?:Z|[+-]\d{2}:\d{2})$/.test(b.start) ||
+    Number.isNaN(startMs)
   ) {
-    return error(res, 400, 'validation', 'name/email/start/notes не проходят валидацию контракта');
+    return error(res, 400, 'validation', 'start должен быть ISO-моментом с зоной');
   }
   const mskMs = startMs + MSK_OFFSET_MIN * 60_000;
   const dayStartMs = Math.floor(mskMs / 86_400_000) * 86_400_000;
@@ -155,10 +167,13 @@ app.get('/api/bookings', (_req, res) => {
 app.post('/api/event-types', (req, res) => {
   const t = readBody(req, res, ['id', 'title', 'description', 'durationMinutes']);
   if (t === null) return undefined;
+  // как bookingCreateSchema: pattern и maxLength — по СЫРОЙ строке (бэкенд
+  // считает max до trim), min/непустота — по trim'нутому
+  const raw = req.body;
   if (
-    typeof t.id !== 'string' || !ID_PATTERN.test(t.id) ||
-    typeof t.title !== 'string' || t.title.length < 1 || t.title.length > 80 ||
-    (t.description !== undefined && (typeof t.description !== 'string' || t.description.length > 500)) ||
+    typeof t.id !== 'string' || !ID_PATTERN.test(raw.id) ||
+    typeof t.title !== 'string' || t.title === '' || raw.title.length > 80 ||
+    (t.description !== undefined && (typeof t.description !== 'string' || raw.description.length > 500)) ||
     !Number.isInteger(t.durationMinutes) || t.durationMinutes < 5 || t.durationMinutes > 540 || t.durationMinutes % 5 !== 0
   ) {
     return error(res, 400, 'validation', 'id/title/description/durationMinutes не проходят валидацию контракта');

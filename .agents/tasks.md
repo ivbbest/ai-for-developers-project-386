@@ -207,3 +207,20 @@
   контейнер `node:24`** (решение §11 7); Docker 29.x доступен нативно.
 - Отклонено (финально): Fastify (взяли Express), Mantine (взяли shadcn/ui),
   TanStack Query (тонкий fetch-клиент); Prism как мок этапа 2 (взяли стаб контракта).
+
+### Ревью 2026-09-04, раунд 2 — ветка `docs/review-recommendations-2` (реализована в этой же ветке)
+
+- [x] Три независимых прохода (бэк; фронт; контракт + e2e + CI/CD + docs) + перепроверка
+      чтением/пробами/фактическими прогонами; документ раунда удалён после реализации
+- [x] P2×4 — Express 4xx→400 (`errors.ts`, тест URIError), `aliveRef`/StrictMode (рефреш 409
+      в dev + e2e-ассерт), e2e-очистка БД в command webServer (воспроизведено: 2 прогона в
+      одном контейнере), decision-guide `USER node` | bfc5330 a764296 d2ea9b9 34632ae
+- [x] Пакет P3: строгость zod↔yaml (eventTypeId-паттерн, max-до-trim, root-issue RU, 413 на
+      любом POST, предикат /api, x-powered-by), notes+raw-длины в стабе (+4 смоук → 46),
+      non-root-ассерт в docker.yml, trace-artifact в e2e.yml, SHA-пины экшенов, .dockerignore,
+      фронтовые гонки/a11y/empty-state/textarea/preview-proxy/exhaustive-deps, отставание доков
+- [x] Остаток раунда 1: 2 e2e-сценария (протухший слот E3, дата вне окна E5), де-хардкод
+      времени слота, детерминированный гейт вместо 800 мс, timeout в opencode*.yml,
+      deploy-global откат + перечень env, мёртвая plain-ветка INSERT | d2ea9b9 e5a5730 34632ae
+- [ ] Остаток для владельца (не код): решение по длине email (контракт не ограничивает,
+      zod режет 254) и подтверждение `USER node` на Render после ближайшего деплоя

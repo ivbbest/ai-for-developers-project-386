@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Build image
         run: docker build -t cal-com:ci .
       - name: Smoke the built image (API + static + non-root)
@@ -66,4 +66,10 @@ jobs:
           done
           if [ "$health" != "healthy" ]; then
             echo "health: $health"; docker logs cal-com-smoke; exit 1
+          fi
+          # шаг называется «+ non-root» — и теперь действительно это проверяет:
+          # без ветки удаление USER node из Dockerfile проходило зелёным
+          user=$(docker inspect --format '{{.Config.User}}' cal-com-smoke)
+          if [ "$user" != "node" ]; then
+            echo "образ должен работать от node, получили USER='$user'"; exit 1
           fi

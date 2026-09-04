@@ -10,6 +10,7 @@ import { OwnerBlock } from '../components/owner-block';
 export function BookTypePage() {
   const [types, setTypes] = useState<EventType[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,7 +21,7 @@ export function BookTypePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reload]);
 
   return (
     <div>
@@ -33,8 +34,18 @@ export function BookTypePage() {
           </CardDescription>
         </CardContent>
       </Card>
-      {error && <p className="text-destructive">{error}</p>}
+      {error && (
+        <p className="text-destructive" role="alert">
+          {error}{' '}
+          <button type="button" className="underline" onClick={() => { setError(null); setReload((n) => n + 1); }}>
+            Повторить
+          </button>
+        </p>
+      )}
       {types === null && !error && <Skeleton className="h-32" />}
+      {types !== null && types.length === 0 && (
+        <p className="text-muted-foreground">Пока нет доступных типов событий</p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         {types?.map((t) => (
           <Link key={t.id} to={`/book/${t.id}`}>

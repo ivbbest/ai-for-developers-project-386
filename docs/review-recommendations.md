@@ -35,7 +35,7 @@
 | 9 | CI-гигиена (Р2/Д5, Р7/Д6, Р9/Д7, Р12/Д11) | `e2e.yml`: шаги `contract:check` и `lint` фронта; `node:24` → `node:24.20.0` во всех workflow, compose и e2e-Dockerfile; новый `docker.yml`: сборка образа + smoke (API/статика/404) на push/PR Docker-путей |
 
 Проверки после всех правок: backend 64/64, contract-check OK, смоук контракта
-(29) и стаба (41) зелёные, фронт typecheck/lint/build зелёные, e2e 6/6,
+(28) и стаба (42) зелёные, фронт typecheck/lint/build зелёные, e2e 6/6,
 Docker-образ non-root smoke пройден.
 
 ---
