@@ -11,8 +11,8 @@
   **push, открытие PR и слияние в `main` — только пользователь** (push агенту закрыт
   правилами окружения). Зависимая работа — на паузе до мержа
   зависимости; независимые — параллельные ветки. Детали и ветки этапов —
-  `docs/work-plan.md` «Git-workflow».
-- **Тесты обязательны** слоем на этап (`docs/work-plan.md` «Тесты»); задача =
+  `docs/archive/work-plan.md` «Git-workflow».
+- **Тесты обязательны** слоем на этап (`docs/archive/work-plan.md` «Тесты»); задача =
   поведение + тест + коммит (`retrospective.md` (архив: `.agents/archive/`) §4).
 - **Публичная гигиена**: в коде/коммитах/PR/README и docs приложения — без
   ИИ-формулировок и ссылок на `AGENTS.md`/`.agents` (исключение — planning-доки курса).
@@ -47,7 +47,7 @@
 
 ## Разработка (задачи курса)
 
-> Исполняемый план с деталями и критериями готовности — `docs/work-plan.md`
+> Исполняемый план с деталями и критериями готовности — `docs/archive/work-plan.md`
 > (этапы 0–5). Ниже — статус-чек-лист; при расхождении приоритет у work-plan.md.
 
 ### Шаг 0 — Предварительный анализ (входные материалы)
@@ -56,9 +56,9 @@
 - [x] Проанализированы все ссылки из материалов (TypeSpec, Vite, shadcn, Mantine, Prism,
       Playwright MCP, CDP MCP, Conventional Commits, release-please, cal.com, Render/Railway)
 - [x] Составлено предварительное понимание: `docs/project-understanding.md`
-- [x] Создан SDD-lite каркас: `docs/specs/TEMPLATE.md`, черновик `docs/specs/api-contract.md`
+- [x] Создан SDD-lite каркас: `docs/archive/specs-TEMPLATE.md`, черновик `docs/specs/api-contract.md`
 - [x] Зафиксированы стек-решение и структура (§5/§10/§11 в project-understanding.md)
-- [x] Создан путеводитель по изучению проекта: `docs/reading-guide.md`
+- [x] Создан путеводитель по изучению проекта: `docs/archive/reading-guide.md`
 
 ### Шаг 0.5 — Архитектурное ревью плана и контракта
 - [x] Ревью артефактов шага 0 (контракт ↔ UI ↔ план, перекрёстная сверка со скринами)
@@ -171,6 +171,15 @@
       Manual deploy → Refresh seed на месте (эфемерный диск free-таргета — ожидаемо по §11.10)
 - [x] 5.3 Секция «Демо» в README (URL + оговорки тарифа), актуальные команды тестов/Docker;
       статусы плана закрыты — **все этапы 1–5 плана выполнены**
+
+### Документация (итог курса)
+
+- [x] Гид по проекту: контекст, архитектура, решения с альтернативами и ценой,
+      запуск, аудиторский след (PR → доказательство) — `docs/decision-guide.md`
+- [x] Архив выполненных planning-доков: `docs/archive/` (work-plan, reading-guide,
+      specs-TEMPLATE); ссылки в AGENTS/спеках/разборе обновлены
+- [x] Статусные шапки: project-understanding (реализовано полностью), api-contract
+      (сверка через prism-proxy), deploy-global (вариант A реализован)
 
 ### Ревью 2026-09-03 (ветка `docs/review-recommendations`)
 
