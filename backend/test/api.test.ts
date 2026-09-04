@@ -287,6 +287,15 @@ describe('POST /api/event-types (3.4)', () => {
     expect(res.body.code).toBe('duplicate_id');
   });
 
+  it('P3: title/description maxLength по сырой строке (до trim) — как name в броне', async () => {
+    const title = await request(api).post('/api/event-types').send(type({ title: `${'а'.repeat(80)}   ` }));
+    expect(title.status).toBe(400);
+    expect(title.body.code).toBe('validation');
+    const desc = await request(api).post('/api/event-types').send(type({ description: `${'б'.repeat(500)}   ` }));
+    expect(desc.status).toBe(400);
+    expect(desc.body.code).toBe('validation');
+  });
+
   it('E12: duration 545/0/13 → 400; 540 → 201 и один слот в день', async () => {
     for (const bad of [545, 0, 13]) {
       const res = await request(api).post('/api/event-types').send(type({ id: `x-${bad}`, durationMinutes: bad }));

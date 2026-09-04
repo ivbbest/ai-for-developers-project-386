@@ -199,4 +199,23 @@ test.describe.serial('краевые проверки интерфейса', () 
     await expect(page.getByText('время слота уже прошло')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Обновить слоты' })).toBeVisible();
   });
+
+  test('сбой счётчика «Свободно» не блокирует бронь: счётчик справочный, правда за POST', async ({ page }) => {
+    // триаж ревью PR #25 (пункт про блокировку отправки): бэкенд в транзакции
+    // перепроверяет прошлое/окно/конфликт — блокировка по неудачному fetch
+    // счётчика мешала бы легитимной броне и пути E3; фиксируем контракт поведения
+    await openGrid(page, 'meet-15');
+    await slotRow(page, 0).click();
+    await page.getByRole('button', { name: 'Продолжить' }).click();
+    await expect(page).toHaveURL(/\/confirm\?start=/);
+    await page.route('**/api/event-types/*/slots**', (route) =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: '{"code":"server_error","message":"x"}' }),
+    );
+    await page.reload();
+    await expect(page.getByText('не загрузилось')).toBeVisible();
+    await page.getByPlaceholder('Имя').fill('Сбой Сетки');
+    await page.getByPlaceholder('Email').fill('slotsfail@example.com');
+    await page.getByRole('button', { name: 'Подтвердить запись' }).click();
+    await expect(page.getByText('Бронь подтверждена. До встречи!')).toBeVisible();
+  });
 });
