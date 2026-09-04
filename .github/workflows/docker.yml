@@ -45,6 +45,9 @@ jobs:
         run: docker build -t cal-com:ci .
       - name: Smoke the built image (API + static + non-root)
         run: |
+          # EXIT-ловушка: контейнер снимается и при провале smoke (exit 1),
+          # а не только на успешной ветке
+          trap 'docker rm -f cal-com-smoke >/dev/null 2>&1 || true' EXIT
           docker run -d --name cal-com-smoke -p 3000:3000 cal-com:ci
           ok=""
           for i in $(seq 1 30); do
@@ -64,4 +67,3 @@ jobs:
           if [ "$health" != "healthy" ]; then
             echo "health: $health"; docker logs cal-com-smoke; exit 1
           fi
-          docker rm -f cal-com-smoke

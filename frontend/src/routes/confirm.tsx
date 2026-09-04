@@ -180,7 +180,12 @@ export function ConfirmPage() {
                 <p className="text-sm text-destructive" role="alert">
                   {error}
                   {(conflict || expired) && (
-                    <Link className="ml-2 underline" to={`/book/${typeId}?date=${dayParam}`}>
+                    // expired — слот протух через полночь: вчерашняя дата ведёт
+                    // на пустую сетку, ссылка без ?date открывает сегодня
+                    <Link
+                      className="ml-2 underline"
+                      to={expired ? `/book/${typeId}` : `/book/${typeId}?date=${dayParam}`}
+                    >
                       Обновить слоты
                     </Link>
                   )}

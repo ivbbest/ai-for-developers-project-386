@@ -113,6 +113,8 @@ app.post('/api/bookings', (req, res) => {
   const minuteOfDay = (mskMs - dayStartMs) / 60_000;
   const startDay = new Date(dayStartMs).toISOString().slice(0, 10);
   const today = mskDay(new Date());
+  // стаб сверяет «прошло» по системным часам: NOW-env — фича бэкенда (nowFn),
+  // в стабе сознательно не дублируем — мок всегда живёт на реальном времени
   if (startMs < Date.now()) {
     return error(res, 400, 'slot_out_of_window', 'время слота уже прошло');
   }
