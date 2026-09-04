@@ -53,11 +53,13 @@ export function apiErrorHandler(err: unknown, _req: Request, res: Response, next
   if (type === 'entity.parse.failed') {
     return send(res, 400, 'validation', 'Ожидался валидный JSON'); // E9
   }
-  // Ошибки самого Express с клиентским status: URIError 400 на битый
+  // Ошибки самого Express/body-parser с клиентским status: URIError 400 на битый
   // percent-encoding в пути (router/lib/layer.js навешивает status=400, но НЕ
-  // expose), SyntaxError 400 от qs. Без ветки проваливаются в generic-500,
-  // загрязняя мониторинг 5xx мусорным трафиком (E19: 5xx — только сбои сервера)
-  // и расходясь со стабом/Prism. HttpError и body-parser перехвачены выше.
+  // expose), SyntaxError 400 от qs, encoding.unsupported 415 от body-parser.
+  // Без ветки проваливаются в generic-500, загрязняя мониторинг 5xx мусорным
+  // трафиком (E19: 5xx — только сбои сервера)
+  // и расходясь со стабом/Prism. HttpError и JSON-ошибки body-parser
+  // (entity.*) перехвачены выше.
   // Сообщение фиксированное RU — текст ошибки (может содержать фрагмент пути) наружу не идёт.
   const status = (err as { status?: number })?.status;
   if (typeof status === 'number' && status >= 400 && status < 500) {

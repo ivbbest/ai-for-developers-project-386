@@ -14,7 +14,7 @@ export function SuccessPage() {
         {/* h1 вместо CardTitle (div) — на странице нет ни одного заголовка
             верхнего уровня; классы те же, вид не меняется (preflight обнуляет
             браузерные стили h1) */}
-        <h1 className="font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm">
+        <h1 className="font-heading text-base leading-snug font-medium">
           Бронь подтверждена. До встречи!
         </h1>
         {booking ? (

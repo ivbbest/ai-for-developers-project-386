@@ -50,7 +50,7 @@ export function AdminNewTypePage() {
     <Card className="mx-auto max-w-md">
       <CardHeader>
         {/* h1 вместо CardTitle (div) — см. success.tsx: вид тот же, семантика верная */}
-        <h1 className="font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm">
+        <h1 className="font-heading text-base leading-snug font-medium">
           Новый тип события
         </h1>
         <CardDescription>id задаёте вы — строчные латинские буквы, цифры, дефисы</CardDescription>
