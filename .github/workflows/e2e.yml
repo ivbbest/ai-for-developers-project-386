@@ -46,7 +46,7 @@ jobs:
       image: node:24.20.0
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Install workspace deps from lockfile
         run: npm ci
       - name: Typecheck backend
@@ -66,7 +66,7 @@ jobs:
       image: node:24.20.0
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Install workspace deps from lockfile
         run: npm ci
       - name: Install e2e deps (standalone install)
@@ -78,3 +78,12 @@ jobs:
       - name: Playwright suite (webServer поднимает бэк и vite сам)
         run: npx playwright test
         working-directory: e2e
+      - name: Upload traces & reports (retain-on-failure пишет в test-results/)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-test-results
+          path: e2e/test-results/
+          retention-days: 7
+          # иначе артефакт «успешного» прогона с пустой папкой падает ошибкой
+          if-no-files-found: ignore

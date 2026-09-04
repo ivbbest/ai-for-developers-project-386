@@ -39,7 +39,7 @@ jobs:
       # та же среда, что dev-обёртка docker-compose.dev.yml (node:24.20.0)
       image: node:24.20.0
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Install workspace deps from lockfile
         run: npm ci
       - name: Save the committed artifact for comparison
