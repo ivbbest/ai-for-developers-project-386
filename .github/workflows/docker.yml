@@ -50,5 +50,13 @@ jobs:
           grep -q meet-15 /tmp/catalog.json
           curl -sf http://localhost:3000/ | grep -q 'id="root"'
           curl -s http://localhost:3000/api/whatever -o /dev/null -w '%{http_code}\n' | grep -q 404
-          docker inspect --format '{{.State.Health.Status}}' cal-com-smoke
+          health=""
+          for i in $(seq 1 24); do
+            health=$(docker inspect --format '{{.State.Health.Status}}' cal-com-smoke)
+            [ "$health" = "healthy" ] && break
+            sleep 5
+          done
+          if [ "$health" != "healthy" ]; then
+            echo "health: $health"; docker logs cal-com-smoke; exit 1
+          fi
           docker rm -f cal-com-smoke

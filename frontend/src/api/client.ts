@@ -15,9 +15,11 @@ const REQUEST_TIMEOUT_MS = 15_000;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // сеть не гарантирует завершения: без таймаута экран висит в skeleton вечно
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
   const res = await fetch(`/api${path}`, {
     ...init,
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    // отмена вызывающего (если появится) и дедлайн живут вместе, а не перезаписывают друг друга
+    signal: init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout,
   });
   if (!res.ok) {
     let body;
