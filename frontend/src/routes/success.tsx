@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { Booking } from '../api/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { formatDateTimeMsk } from '../lib/time';
 
 export function SuccessPage() {
@@ -11,7 +11,12 @@ export function SuccessPage() {
   return (
     <Card className="mx-auto max-w-md text-center">
       <CardHeader>
-        <CardTitle>Бронь подтверждена. До встречи!</CardTitle>
+        {/* h1 вместо CardTitle (div) — на странице нет ни одного заголовка
+            верхнего уровня; классы те же, вид не меняется (preflight обнуляет
+            браузерные стили h1) */}
+        <h1 className="font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm">
+          Бронь подтверждена. До встречи!
+        </h1>
         {booking ? (
           <CardDescription>{formatDateTimeMsk(booking.start)}</CardDescription>
         ) : (

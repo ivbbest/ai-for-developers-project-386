@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { ApiError } from '../api/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export function AdminNewTypePage() {
@@ -49,7 +49,10 @@ export function AdminNewTypePage() {
   return (
     <Card className="mx-auto max-w-md">
       <CardHeader>
-        <CardTitle>Новый тип события</CardTitle>
+        {/* h1 вместо CardTitle (div) — см. success.tsx: вид тот же, семантика верная */}
+        <h1 className="font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm">
+          Новый тип события
+        </h1>
         <CardDescription>id задаёте вы — строчные латинские буквы, цифры, дефисы</CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,7 +83,7 @@ export function AdminNewTypePage() {
             />
             {!durationOk && <span className="text-xs text-destructive">от 5 до 540, кратно 5</span>}
           </label>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           <Button type="submit" disabled={submitting || !idOk || !title.trim() || !durationOk}>
             {submitting ? 'Создание…' : 'Создать тип'}
           </Button>
