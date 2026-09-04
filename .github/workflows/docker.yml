@@ -30,6 +30,11 @@ on:
 permissions:
   contents: read
 
+# серия на ref: частые пуши не должны копить параллельные ~3-мин сборки образа
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest

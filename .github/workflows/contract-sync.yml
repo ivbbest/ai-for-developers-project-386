@@ -36,7 +36,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     container:
-      # та же среда, что dev-обёртка docker-compose.dev.yml (node:24)
+      # та же среда, что dev-обёртка docker-compose.dev.yml (node:24.20.0)
       image: node:24.20.0
     steps:
       - uses: actions/checkout@v7

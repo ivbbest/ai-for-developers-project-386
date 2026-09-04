@@ -39,7 +39,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  backend-unit:
+  # имя checks, а не backend-unit: здесь же contract:check бэка и линт фронта
+  checks:
     runs-on: ubuntu-latest
     container:
       image: node:24.20.0
