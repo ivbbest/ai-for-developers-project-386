@@ -20,7 +20,10 @@ export function createApp(db: Db, opts: AppOptions = {}): Express {
   app.disable('x-powered-by');
   // E18: «413 на любом POST» — limit у express.json работает только для
   // application/json, остальные content-type тело не парсят вовсе; гейтим
-  // по Content-Length до роутеров (HttpError даёт JSON, а не html-413)
+  // по Content-Length до роутеров (HttpError даёт JSON, а не html-413).
+  // Известное ограничение: chunked без Content-Length не гейтится (заголовок
+  // отсутствует → NaN > limit === false); не-JSON тело Express не буферизует
+  // вовсе, поэтому риск только в коде ответа (400 вместо 413), не в памяти.
   const BODY_LIMIT_BYTES = 64 * 1024;
   app.use((req, _res, next) => {
     if (req.method === 'POST' && Number(req.headers['content-length']) > BODY_LIMIT_BYTES) {

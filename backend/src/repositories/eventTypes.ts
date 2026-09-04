@@ -34,7 +34,8 @@ export function getEventType(db: Db, id: string): EventType | undefined {
 // Всегда ON CONFLICT(id) DO NOTHING: и идемпотентный seed, и 409 duplicate_id
 // в POST используют один механизм — changes===0 при коллизии PK. Отдельная
 // plain-ветка без DO NOTHING в проде не вызывалась никогда (мёртвый код удалён
-// по ревью); другие нарушения (NOT NULL, CHECK) бросаются в обеих схемах.
+// по ревью); другие нарушения (NOT NULL, CHECK) бросаются одинаково в обоих
+// вызывающих путях — seed и POST.
 const INSERT_SQL = `INSERT INTO event_types (id, title, description, duration_minutes)
      VALUES (@id, @title, @description, @durationMinutes) ON CONFLICT(id) DO NOTHING`;
 
