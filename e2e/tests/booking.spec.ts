@@ -35,14 +35,14 @@ test.describe.serial('бронирование: полный путь гостя
     await openGrid(page, 'meet-15');
     // подпись выбранного слота берём из самой сетки, а не хардкодом:
     // сдвиг рабочих констант на бэке не должен ломать сценарий
-    const chosen = (await slotRow(page, 3).locator('span').first().textContent())?.trim();
+    const chosen = (await slotRow(page, 3).locator('span').first().textContent())?.trim() ?? '';
     expect(chosen).toMatch(/^\d{2}:\d{2} - \d{2}:\d{2}$/);
     await slotRow(page, 3).click();
     await page.getByRole('button', { name: 'Продолжить' }).click();
     await expect(page).toHaveURL(/\/confirm\?start=/);
     // инфо-панель: время выбранного слота (то же, что в сетке) и посчитанный
     // сервером счётчик свободных — не «…» из незагруженного состояния
-    await expect(page.getByText(chosen!, { exact: true })).toBeVisible();
+    await expect(page.getByText(chosen, { exact: true })).toBeVisible();
     await expect(page.getByText('Свободно', { exact: true }).locator('..')).toContainText(/\d+/);
 
     await page.getByPlaceholder('Имя').fill('Э2Е Гость');

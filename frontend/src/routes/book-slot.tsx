@@ -202,9 +202,8 @@ export function BookSlotPage() {
                   typeId &&
                   selected &&
                   navigate(
-                  `/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}&end=${encodeURIComponent(selected.end)}`,
-                )
-
+                    `/book/${typeId}/confirm?start=${encodeURIComponent(selected.start)}&end=${encodeURIComponent(selected.end)}`,
+                  )
                 }
               >
                 Продолжить
