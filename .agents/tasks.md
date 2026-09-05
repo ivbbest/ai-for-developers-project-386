@@ -10,9 +10,9 @@
   на каждую существенную разработку; коммит-чекпоинт на каждое изменение;
   **push, открытие PR и слияние в `main` — только пользователь** (push агенту закрыт
   правилами окружения). Зависимая работа — на паузе до мержа
-  зависимости; независимые — параллельные ветки. Детали и ветки этапов —
-  `docs/archive/work-plan.md` «Git-workflow».
-- **Тесты обязательны** слоем на этап (`docs/archive/work-plan.md` «Тесты»); задача =
+  зависимости; независимые — параллельные ветки. Детали — `AGENTS.md` «Git-workflow».
+- **Тесты обязательны** слоем на этап (`AGENTS.md` «Тесты обязательны», CI-workflows
+  `.github/workflows/`); задача =
   поведение + тест + коммит (`retrospective.md` (архив: `.agents/archive/`) §4).
 - **Публичная гигиена**: в коде/коммитах/PR/README и docs приложения — без
   ИИ-формулировок и ссылок на `AGENTS.md`/`.agents` (исключение — planning-доки курса).
@@ -47,8 +47,9 @@
 
 ## Разработка (задачи курса)
 
-> Исполняемый план с деталями и критериями готовности — `docs/archive/work-plan.md`
-> (этапы 0–5). Ниже — статус-чек-лист; при расхождении приоритет у work-plan.md.
+> Исполняемый план этапов 0–5 выполнен и удалён из репозитория (зачистка
+> 2026-09-05); история — в git (`git log -- docs/work-plan.md`). Ниже —
+> статус-чек-лист, он актуален.
 
 ### Шаг 0 — Предварительный анализ (входные материалы)
 - [x] Изучены `input/*.txt` (user-story, design-first, frontend, backend, docker)
@@ -56,9 +57,9 @@
 - [x] Проанализированы все ссылки из материалов (TypeSpec, Vite, shadcn, Mantine, Prism,
       Playwright MCP, CDP MCP, Conventional Commits, release-please, cal.com, Render/Railway)
 - [x] Составлено предварительное понимание: `docs/project-understanding.md`
-- [x] Создан SDD-lite каркас: `docs/archive/specs-TEMPLATE.md`, черновик `docs/specs/api-contract.md`
+- [x] Создан SDD-lite каркас: `specs-TEMPLATE` (ныне удалён, история в git), черновик `docs/specs/api-contract.md`
 - [x] Зафиксированы стек-решение и структура (§5/§10/§11 в project-understanding.md)
-- [x] Создан путеводитель по изучению проекта: `docs/archive/reading-guide.md`
+- [x] Создан путеводитель по изучению проекта: `reading-guide.md` (ныне удалён, история в git)
 
 ### Шаг 0.5 — Архитектурное ревью плана и контракта
 - [x] Ревью артефактов шага 0 (контракт ↔ UI ↔ план, перекрёстная сверка со скринами)
@@ -178,13 +179,15 @@
       запуск, аудиторский след (PR → доказательство) — `docs/decision-guide.md`
 - [x] Архив выполненных planning-доков: `docs/archive/` (work-plan, reading-guide,
       specs-TEMPLATE); ссылки в AGENTS/спеках/разборе обновлены
+      (2026-09-05: архив удалён из репозитория, ссылки зачищены)
 - [x] Статусные шапки: project-understanding (реализовано полностью), api-contract
       (сверка через prism-proxy), deploy-global (вариант A реализован)
 
 ### Ревью 2026-09-03 (ветка `docs/review-recommendations`)
 
 - [x] Два независимых ревью (recommendations + deep-analysis) объединены и сверены
-      с кодом; документ `docs/review-recommendations.md` — финальный; 7 ложных
+      с кодом; документ `docs/review-recommendations.md` — финальный (позже удалён,
+      история в git); 7 ложных
       тревог сняты, осознанные ограничения отделены от находок
 - [x] Подтверждённые P1/P2 исправлены в ветке: union `server_error`, коды стаба
       (E3/404/зона), сброс стейта при смене типа, expired-ветка + a11y на confirm,
